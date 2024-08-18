@@ -206,7 +206,7 @@ export class SceneVisual {
     if (found === "hero") {
       this.dragObjX = this.scene.hero.x;
       this.dragObjY = this.scene.hero.y;
-    } else if (found === "win") {
+    } else if (found.startsWith?.("win")) {
       this.dragObjX = this.scene.win.x;
       this.dragObjY = this.scene.win.y;
       this.dragObjW = this.scene.win.w;

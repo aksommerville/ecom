@@ -339,6 +339,10 @@ export class Ecom {
   }
   
   ckw(x, y) {
+    if (x < 0) return 1;
+    if (y < 0) return 1;
+    if (x >= SCREENW) return 1;
+    if (y >= SCREENH) return 1;
     for (const wl of this.wv) {
       if (!wl.c) continue; // Don't count moving platforms.
       if (x < wl.x) continue;

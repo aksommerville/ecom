@@ -1,7 +1,10 @@
 song totd
 bg 8ac
-hero 160 128
-win 200 48 56 16
+hero 36 64
+win 160 80 56 16
 wall 0 128 256 16
-wall 200 64 56 8
-platform 136 88 64 120 0
+wall 160 96 56 8
+wall 0 64 76 64
+wall 76 96 32 32
+wall 76 80 16 16
+wall 108 112 16 16
