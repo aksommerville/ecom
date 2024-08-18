@@ -23,4 +23,12 @@ export class Video {
   blit(dx, dy, sx, sy, w, h) {
     this.c.drawImage(this.src, sx, sy, w, h, dx, dy, w, h);
   }
+  
+  flop(dx, dy, sx, sy, w, h) {
+    this.c.save();
+    this.c.translate(dx + w/2, dy + h/2);
+    this.c.scale(-1, 1);
+    this.c.drawImage(this.src, sx, sy, w, h, -w/2, -h/2, w, h);
+    this.c.restore();
+  }
 }

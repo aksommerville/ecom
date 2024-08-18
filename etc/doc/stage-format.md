@@ -11,9 +11,10 @@ Count of arguments is hard-coded. Unknown opcodes are an error.
 Most arguments will be an integer in 0..63, use the base64 alphabet. Plus "?" for 64, if we need it. So, base65 actually.
 Spatial arguments, multiply by 4.
 
-| Text               | Compiled                         | Notes |
-|--------------------|----------------------------------|-------|
-| wall X Y W H       | w X Y W H                        | Text in pixels, compiled in 4 pixels. |
-| hero X Y           | h X Y                            | Pixels. Horizontal center, vertical bottom. |
-| bg RGB             | b R G B                          | Hexadecimal, not base64. (both formats) |
-| song NAME          | s NAME .                         | Song names can't contain a dot. |
+| Text                   | Compiled                         | Notes |
+|------------------------|----------------------------------|-------|
+| wall X Y W H           | w X Y W H                        | Text in pixels, compiled in 4 pixels. |
+| hero X Y               | h X Y                            | Pixels. Horizontal center, vertical bottom. |
+| bg RGB                 | b R G B                          | Hexadecimal, not base64. (both formats) |
+| song NAME              | s NAME .                         | Song names can't contain a dot. |
+| platform X Y W H DX DY | p X Y W H DX DY                  | Pixels. DX,DY bias by -32 compiled. |

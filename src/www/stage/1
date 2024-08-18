@@ -2,3 +2,5 @@ bg f00
 song totd
 hero 20 64
 wall 12 64 24 36
+wall 100 128 156 16
+platform 100 68 80 16 40 0

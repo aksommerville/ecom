@@ -248,7 +248,6 @@ static int minify_external_song(const char *href,int hrefc) {
  */
  
 static int minify_external_stage(const char *href,int hrefc) {
-  fprintf(stderr,"%s:%d:%s '%.*s'...\n",__FILE__,__LINE__,__func__,hrefc,href);
   char path[1024];
   int pathc=resolve_path(path,sizeof(path),min.srcpath,href,hrefc);
   if ((pathc<1)||(pathc>=sizeof(path))) {

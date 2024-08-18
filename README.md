@@ -9,9 +9,9 @@ Everything is copied; no need to clone that repo to build this one.
 
 ## TODO
 
-- [ ] Physics
-- - [ ] Hero
-- - [ ] Platform
+- [x] Physics
+- - [x] Hero
+- - [x] Platform
 - [ ] Game logic
 - - [ ] Explode
 - - [ ] Show step count

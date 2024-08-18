@@ -39,6 +39,17 @@ int minify_stage(const char *src,int srcc,const char *refname) {
       v>>=2; \
       if (sr_encode_u8(&min.dst,b65alphabet[v])<0) return -1; \
     }
+    #define INT_B65_D4_SIGNED(name) { \
+      RDTOKEN(name) \
+      int v; \
+      if ((sr_int_eval(&v,token,tokenc)<2)||(v<-128)||(v>128)||(v&3)) { \
+        fprintf(stderr,"%s:%d: Expected multiple of 4 in -128..128 for '%s', found '%.*s'\n",refname,lineno,name,tokenc,token); \
+        return -2; \
+      } \
+      v+=128; \
+      v>>=2; \
+      if (sr_encode_u8(&min.dst,b65alphabet[v])<0) return -1; \
+    }
     #define FIXED_HEX(len,name) { \
       RDTOKEN(name) \
       if (tokenc!=len) { \
@@ -87,6 +98,15 @@ int minify_stage(const char *src,int srcc,const char *refname) {
     } else if ((kc==4)&&!memcmp(k,"song",4)) {
       OPCODE('s')
       STRING('.',"name")
+      
+    } else if ((kc==8)&&!memcmp(k,"platform",8)) {
+      OPCODE('p')
+      INT_B65_D4("x")
+      INT_B65_D4("y")
+      INT_B65_D4("w")
+      INT_B65_D4("h")
+      INT_B65_D4_SIGNED("dx")
+      INT_B65_D4_SIGNED("dy")
       
     } else {
       fprintf(stderr,"%s:%d: Unexpected stage command '%.*s'\n",refname,lineno,kc,k);

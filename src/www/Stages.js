@@ -37,7 +37,7 @@ export class Stages {
       else if (n === 62) dst += "+";
       else if (n === 63) dst += "/";
       else if (n === 64) dst += "?";
-      else throw new Error(`${href}:${lineno}: I am a psychic chicken.`);
+      else throw new Error(`${href}:${lineno}: Illegal value ${n} for base65`);
     }
     for (let srcp=0; srcp<src.length; lineno++) {
       let nlp = src.indexOf("\n", srcp);
@@ -72,6 +72,16 @@ export class Stages {
             dst += "s";
             dst += words[1];
             dst += ".";
+          } break;
+          
+        case "platform": {
+            dst += "p";
+            base65_div4(words[1]);
+            base65_div4(words[2]);
+            base65_div4(words[3]);
+            base65_div4(words[4]);
+            base65_div4(+words[5] + 128);
+            base65_div4(+words[6] + 128);
           } break;
       
         default: throw new Error(`${href}:${lineno}: Unexpected command ${JSON.stringify(words[0])}`);
