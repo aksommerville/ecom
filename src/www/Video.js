@@ -8,11 +8,19 @@ export class Video {
     this.cv.width = SCREENW;
     this.cv.height = SCREENH;
     this.c = this.cv.getContext("2d");
+    this.bcv = document.createElement("CANVAS");
+    this.bcv.width = SCREENW;
+    this.bcv.height = SCREENH;
+    this.bc = this.bcv.getContext("2d");
   }
   
   end() {
     this.c.fillStyle = "#888";
     this.c.fillRect(0, 0, SCREENW, SCREENH);
+  }
+  
+  bg() {
+    this.c.drawImage(this.bcv, 0, 0);
   }
 
   rect(x, y, w, h, c) {
@@ -30,5 +38,17 @@ export class Video {
     this.c.scale(-1, 1);
     this.c.drawImage(this.src, sx, sy, w, h, -w/2, -h/2, w, h);
     this.c.restore();
+  }
+  
+  bblit(dx, dy, sx, sy, w, h) {
+    this.bc.drawImage(this.src, sx, sy, w, h, dx, dy, w, h);
+  }
+  
+  bflop(dx, dy, sx, sy, w, h) {
+    this.bc.save();
+    this.bc.translate(dx + w/2, dy + h/2);
+    this.bc.scale(-1, 1);
+    this.bc.drawImage(this.src, sx, sy, w, h, -w/2, -h/2, w, h);
+    this.bc.restore();
   }
 }

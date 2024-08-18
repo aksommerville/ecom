@@ -184,6 +184,7 @@ export class Audio {
   }
   
   playSong(name) {
+    //return;//XXX music disabled
     if (!name) {
       this.ps();
     } else if (this.songs[name]) {

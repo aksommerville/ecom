@@ -38,6 +38,7 @@ export class Ecom {
     this.ldrv = [];
     this.tkv = [];
     this.wz = { x:0, y:0, w:0, h:0 };
+    this.bgc = "#8af";
     const b65 = (s) => {
       s = s.charCodeAt(0);
       if ((s >= 0x41) && (s <= 0x5a)) return s - 0x41;
@@ -81,10 +82,9 @@ export class Ecom {
             const x = b65(st[i++]) << 2;
             const y = b65(st[i++]) << 2;
             const w = b65(st[i++]) << 2;
-            const h = b65(st[i++]) << 2;
             const dx = (b65(st[i++]) << 2) - 128;
             const dy = (b65(st[i++]) << 2) - 128;
-            this.wv.push({ x, y, w, h, dx, dy, c: "#840", hold:0 });
+            this.wv.push({ x, y, w, h:8, dx, dy, hold:0 });
           } break;
       
         case "l": {
@@ -103,6 +103,7 @@ export class Ecom {
           } break;
       }
     }
+    this.rbg();
   }
   
   win() {
@@ -130,6 +131,7 @@ export class Ecom {
   
     if (this.wt > 0) {
       if ((this.wt -= s) <= 0) {
+        this.wt = 0;
         const st = this.g.nextStage();
         if (st) {
           this.reset(st);
@@ -138,8 +140,7 @@ export class Ecom {
           this.reset(this.g.nextStage());
         }
       }
-      this.pvs = state;
-      return;
+      this.bdx = this.bdy = 0;
     }
   
     /* Digest input state, track keystrokes.
@@ -152,13 +153,15 @@ export class Ecom {
         }
         return 0;
       };
-      const ndx = kd(state & (BTN_LEFT | BTN_RIGHT));
-      const ndy = kd(state & (BTN_UP | BTN_DOWN));
-      if (ndx !== this.bdx) {
-        if (this.bdx = ndx) this.stk();
-      }
-      if (ndy !== this.bdy) {
-        if (this.bdy = ndy) this.stk();
+      if (!this.wt) {
+        const ndx = kd(state & (BTN_LEFT | BTN_RIGHT));
+        const ndy = kd(state & (BTN_UP | BTN_DOWN));
+        if (ndx !== this.bdx) {
+          if (this.bdx = ndx) this.stk();
+        }
+        if (ndy !== this.bdy) {
+          if (this.bdy = ndy) this.stk();
+        }
       }
       if (state & BTN_A) {
         if (!this.bj) {
@@ -167,7 +170,7 @@ export class Ecom {
             this.reset(this.st);
           } else if (this.dot.ded > 0.0) {
             // Hold
-          } else {
+          } else if (!this.wt) {
             this.stk();
             this.dot.jon();
           }
@@ -209,7 +212,7 @@ export class Ecom {
     
     /* Check win.
      */
-    if (!this.dot.ded) {
+    if (!this.dot.ded && !this.wt) {
       const x = this.dot.x + 8;
       const y = this.dot.y + 12;
       if ((x >= this.wz.x) && (y >= this.wz.y) && (x < this.wz.x + this.wz.w) && (y < this.wz.y + this.wz.h)) {
@@ -243,22 +246,107 @@ export class Ecom {
   }
   
   render() {
-    this.v.rect(0, 0, SCREENW, SCREENH, "#68a");
-    this.v.rect(this.wz.x, this.wz.y, this.wz.w, this.wz.h, "#0f0");
+    this.v.bg();
     for (const wl of this.wv) {
-      if (!wl.c) continue;
-      const x = Math.round(wl.x);
-      const y = Math.round(wl.y);
-      this.v.rect(x, y, wl.w, wl.h, wl.c);
-    }
-    for (const ldr of this.ldrv) {
-      const x = Math.round(ldr.x);
-      const y = Math.round(ldr.y);
-      this.v.rect(x, y, 16, ldr.h, "#800");
+      if (wl.c) continue;
+      let x = Math.round(wl.x);
+      let y = Math.round(wl.y);
+      for (let subx=x+8, i=Math.floor(wl.w/8)-2; i-->0; subx+=8) {
+        this.v.blit(subx, y, 88, 7, 8, 8);
+      }
+      this.v.blit(x, y, 80, 7, 8, 8);
+      this.v.flop(x + wl.w - 8, y, 79, 7, 8, 8);
     }
     this.dot.render();
     for (const tk of this.tkv) {
       this.v.blit(Math.floor(tk.x), Math.floor(tk.y), 28 + tk.n * 7, 0, 7, 7);
     }
+  }
+  
+  rbg() {
+    this.v.bc.fillStyle = this.bgc;
+    this.v.bc.fillRect(0, 0, SCREENW, SCREENH);
+    
+    for (const wl of this.wv) {
+      if (!wl.c) continue;
+      const colc = wl.w >> 2;
+      const rowc = wl.h >> 2;
+      const x0 = Math.round(wl.x);
+      let y = Math.round(wl.y);
+      for (let yi=rowc; yi-->0; y+=4) {
+        for (let x=x0, xi=colc; xi-->0; x+=4) {
+          // This is criminally inefficient but meh. It only happens once per level.
+          const nv = [
+            this.ckw(x - 2, y - 2),
+            this.ckw(x + 2, y - 2),
+            this.ckw(x + 6, y - 2),
+            this.ckw(x - 2, y + 2),
+            this.ckw(x + 6, y + 2),
+            this.ckw(x - 2, y + 6),
+            this.ckw(x + 2, y + 6),
+            this.ckw(x + 6, y + 6),
+          ];
+          if (nv[1] && nv[3] && nv[4] && nv[6]) { // All cardinals.
+            if (nv[0] && nv[2] && nv[5] && nv[7]) { // All diagonals.
+              this.v.bblit(x, y, 120, 7, 4, 4);
+            } else if (!nv[0]) { // NW missing. It's not possible for more than one to be missing; walls must be at least 2 rows and columns thick (8 pixels).
+              this.v.bblit(x, y, 108, 11, 4, 4);
+            } else if (!nv[2]) {
+              this.v.bblit(x, y, 104, 11, 4, 4);
+            } else if (!nv[5]) {
+              this.v.bblit(x, y, 108, 7, 4, 4);
+            } else {
+              this.v.bblit(x, y, 104, 7, 4, 4);
+            }
+          } else if (nv[1] && nv[3] && nv[4]) { // 3 cardinals: flat edge.
+            this.v.bblit(x, y, 112, 7, 4, 4);
+          } else if (nv[1] && nv[3] && nv[6]) {
+            this.v.bblit(x, y, 116, 11, 4, 4);
+          } else if (nv[1] && nv[4] && nv[6]) {
+            this.v.bblit(x, y, 112, 11, 4, 4);
+          } else if (nv[3] && nv[4] && nv[6]) {
+            this.v.bblit(x, y, 116, 7, 4, 4);
+          } else if (nv[1] && nv[3]) { // 2 cardinals: corner.
+            this.v.bblit(x, y, 100, 11, 4, 4);
+          } else if (nv[1] && nv[4]) {
+            this.v.bblit(x, y, 96, 11, 4, 4);
+          } else if (nv[3] && nv[6]) {
+            this.v.bblit(x, y, 100, 7, 4, 4);
+          } else if (nv[4] && nv[6]) {
+            this.v.bblit(x, y, 96, 7, 4, 4);
+          } else { // Nothing else should be possible. But we do have a singleton tile just in case.
+            this.v.bblit(x, y, 124, 11, 4, 4);
+          }
+        }
+      }
+    }
+    
+    for (const ldr of this.ldrv) {
+      const x = Math.round(ldr.x);
+      let y = Math.round(ldr.y + ldr.h); // Bottom.
+      while (y > ldr.y) {
+        y -= 6;
+        this.v.bblit(x, y, 64, 7, 16, 6);
+      }
+    }
+    
+    let x = this.wz.x + 8;
+    const y = this.wz.y + this.wz.h;
+    let i = (this.wz.w - 16) / 8;
+    for (; i-->0; x+=8) this.v.bblit(x, y, 72, 15, 8, 8);
+    this.v.bblit(this.wz.x, y, 64, 15, 8, 8);
+    this.v.bblit(this.wz.x + this.wz.w - 8, y, 80, 15, 8, 8);
+  }
+  
+  ckw(x, y) {
+    for (const wl of this.wv) {
+      if (!wl.c) continue; // Don't count moving platforms.
+      if (x < wl.x) continue;
+      if (y < wl.y) continue;
+      if (x >= wl.x + wl.w) continue;
+      if (y >= wl.y + wl.h) continue;
+      return 1;
+    }
+    return 0;
   }
 }

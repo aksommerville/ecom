@@ -17,6 +17,8 @@ export class Dot {
     this.j = 0; // Jump in progress.
     this.jt = 0; // Jump time remaining.
     this.ded = 0; // Zero if alive, otherwise counts up during fireworks.
+    this.af = 0; // Animation frame.
+    this.ac = 0; // Animation clock.
   }
   
   setup(x, y) {
@@ -25,6 +27,7 @@ export class Dot {
   }
   
   die() {
+    if (this.e.wt) return;
     console.log(`TODO Dot.die()`);
     this.a.playSong(0);
     this.ded = 0.001;
@@ -58,6 +61,13 @@ export class Dot {
       this.x += this.e.bdx * s * 120; // px/s
       this.flp = this.e.bdx < 0;
       this.clm = 0;
+      if ((this.ac -= s) <= 0) { // Animate walking.
+        this.ac += 0.125;
+        if (++this.af >= 4) this.af = 0;
+      }
+    } else if (!this.clm || this.flr) {
+      this.af = 0;
+      this.ac = 0;
     }
     // Climb ladders:
     if (this.e.bdy) {
@@ -66,6 +76,10 @@ export class Dot {
         if (this.y < this.clm.y - 24) this.y = this.clm.y - 24;
         this.x = this.clm.x; // Ladders and Dot both always 16 width.
         this.flr = 0;
+        if ((this.ac -= s) <= 0) {
+          this.ac += 0.200;
+          if (++this.af >= 2) this.af = 0;
+        }
       }
     }
     // Gravity etc:
@@ -107,10 +121,10 @@ export class Dot {
     }
     // Check all walls:
     for (const wl of this.e.wv) {
-      const le = wl.x + wl.w - this.x; if (le < 0) continue;
-      const ue = wl.y + wl.h - this.y; if (ue < 0) continue;
-      const re = this.x + 16 - wl.x; if (re < 0) continue;
-      const de = this.y + 24 - wl.y; if (de < 0) continue;
+      const le = wl.x + wl.w - this.x; if (le <= 0) continue;
+      const ue = wl.y + wl.h - this.y; if (ue <= 0) continue;
+      const re = this.x + 16 - wl.x; if (re <= 0) continue;
+      const de = this.y + 24 - wl.y; if (de < 0) continue; // Important: Down edge is < not <=
       if ((le <= re) && (le <= ue) && (le <= de)) {
         this.x = wl.x + wl.w;
         lc++;
@@ -137,7 +151,7 @@ export class Dot {
         if (this.y + 24 < ldr.y) continue;
         this.y = ldr.y - 24;
         nflr = ldr;
-        uc++;
+        dc++;
       }
     }
     // If we collided from opposite edges, die.
@@ -181,7 +195,20 @@ export class Dot {
     
     const dx = Math.round(this.x);
     const dy = Math.round(this.y);
-    if (this.flp) this.v.flop(dx, dy, 0, 48, 16, 24);
-    else this.v.blit(dx, dy, 0, 48, 16, 24);
+    let srcx = 0;
+    let srcy = 7;
+    if (this.clm && !this.flr && (this.y + 24 > this.clm.y)) {
+      srcx = 48;
+      srcy = 7;
+      if (this.af) this.v.blit(dx, dy, srcx, srcy, 16, 24);
+      else this.v.flop(dx, dy, srcx, srcy, 16, 24);
+    } else {
+      if (!this.clm) switch (this.af) {
+        case 1: srcx += 16; break;
+        case 3: srcx += 32; break;
+      }
+      if (this.flp) this.v.flop(dx, dy, srcx, srcy, 16, 24);
+      else this.v.blit(dx, dy, srcx, srcy, 16, 24);
+    }
   }
 }

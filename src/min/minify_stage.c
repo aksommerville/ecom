@@ -104,7 +104,6 @@ int minify_stage(const char *src,int srcc,const char *refname) {
       INT_B65_D4("x")
       INT_B65_D4("y")
       INT_B65_D4("w")
-      INT_B65_D4("h")
       INT_B65_D4_SIGNED("dx")
       INT_B65_D4_SIGNED("dy")
       

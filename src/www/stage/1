@@ -1,10 +1,13 @@
-bg f00
+bg 8ac
 song totd
 hero 20 64
 wall 12 64 24 36
 wall 100 128 156 16
-platform 100 68 80 16 40 0
+platform 100 68 48 60 0
+wall 36 80 12 12
+wall 64 80 32 12
 ladder 48 80 64
-wall 120 100 16 24
-wall 192 92 16 32
-win 200 0 56 64
+wall 120 92 16 36
+wall 192 92 16 36
+win 200 48 56 16
+wall 200 64 56 8

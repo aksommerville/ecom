@@ -79,9 +79,8 @@ export class Stages {
             base65_div4(words[1]);
             base65_div4(words[2]);
             base65_div4(words[3]);
-            base65_div4(words[4]);
+            base65_div4(+words[4] + 128);
             base65_div4(+words[5] + 128);
-            base65_div4(+words[6] + 128);
           } break;
           
         case "ladder": {
