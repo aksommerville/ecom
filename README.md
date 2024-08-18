@@ -12,12 +12,13 @@ Everything is copied; no need to clone that repo to build this one.
 - [x] Graphics
 - [x] Render bg, ladders, and motionless walls to an offscreen canvas just once per level.
 - [ ] Sound effects
+- [x] totd plays at like half tempo after compilation. Runs fine in the dev server.
 - [ ] Music
 - [ ] Hello splash
 - [ ] Farewell splash
 - [ ] Audio: Occassionally a too-loud note as it cancels. Hard to repro.
 - [ ] Don't die when squashed, find another way to handle it. Possible to just kiss your toe against a platform and die because of it.
-- [ ] Level editor
+- [x] Level editor
 - [ ] Levels
 - [ ] Experiment with PNG formats, maybe we can reduce size by using index instead of RGBA.
 - [ ] Minicomic.

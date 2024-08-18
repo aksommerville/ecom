@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<head>
+<title>Ecom Editor</title>
+<style>
+html {
+  background-color: #222;
+  color: #fff;
+}
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+.RootUi {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: stretch;
+}
+.RootUi > .sidebar {
+  list-style-type: none;
+  padding: 0;
+  min-width: 200px;
+  border-right: 1px solid #000;
+}
+.RootUi > .sidebar li {
+  cursor: pointer;
+  user-select: none;
+}
+.RootUi > .sidebar li.highlight {
+  background-color: #432;
+}
+.RootUi > .workspace {
+  flex: 1;
+}
+.RootUi > .workspace > * {
+  width: 100%;
+  height: 100%;
+}
+.Editor {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.Editor > .raw {
+  width: 400px;
+  height: 400px;
+}
+.SceneVisual {
+  width: 512px;
+  height: 288px;
+}
+</style>
+<script type="module" src="./bootstrap.js"></script>
+</head>
+<body>
+</body>
+</html>

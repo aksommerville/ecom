@@ -31,4 +31,6 @@ run:;http-server src/www -c-1
 # Unlike the loose input files, you can also just load this with `file:` protocol.
 run-final:$(INDEXHTML);http-server out -c-1
 
+edit:;node src/editor/main.js
+
 clean:;rm -rf mid out

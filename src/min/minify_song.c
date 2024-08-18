@@ -21,8 +21,7 @@ int minify_song(const void *src,int srcc,const char *refname) {
   struct held heldv[HELD_LIMIT];
   int heldc=0;
   if (sr_encode_u8(&min.dst,alpha_data[tempo-1])<0) return -1;
-  // "1000/tempo" means the MIDI reader reports timing in our ticks.
-  struct midi_file *file=midi_file_new(src,srcc,1000/tempo);
+  struct midi_file *file=midi_file_new(src,srcc,1000);
   if (!file) {
     fprintf(stderr,"%s: Failed to decode MIDI file\n",refname);
     return -2;
@@ -30,15 +29,16 @@ int minify_song(const void *src,int srcc,const char *refname) {
   int delay=0;
   int when=0;
   #define FLUSHDELAY { \
-    while (delay>0x40) { \
+    int tickc=delay/tempo; \
+    delay-=tickc*tempo; \
+    while (tickc>0x40) { \
       sr_encode_u8(&min.dst,'\''); \
       sr_encode_u8(&min.dst,alpha_data[0x3f]); \
-      delay-=0x40; \
+      tickc-=0x40; \
     } \
-    if (delay>0) { \
+    if (tickc>0) { \
       sr_encode_u8(&min.dst,'\''); \
-      sr_encode_u8(&min.dst,alpha_data[delay-1]); \
-      delay=0; \
+      sr_encode_u8(&min.dst,alpha_data[tickc-1]); \
     } \
   }
   for (;;) {
@@ -69,7 +69,7 @@ int minify_song(const void *src,int srcc,const char *refname) {
               break;
             }
             if (i>=heldc) break;
-            int dur=when-held->when;
+            int dur=(when-held->when)/tempo;
             if (dur<0) dur=0;
             else if (dur>0x3f) dur=0x3f;
             ((uint8_t*)min.dst.v)[held->durp]=alpha_data[dur];
