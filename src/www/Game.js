@@ -61,4 +61,13 @@ export class Game {
     }
     this.pf = window.requestAnimationFrame(() => this.update());
   }
+  
+  nextStage() {
+    this.stp++;
+    if (this.stp >= this.stg.v.length) {
+      this.stp = -1;
+      return null;
+    }
+    return this.stg.v[this.stp];
+  }
 }

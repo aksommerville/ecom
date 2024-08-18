@@ -114,6 +114,13 @@ int minify_stage(const char *src,int srcc,const char *refname) {
       INT_B65_D4("y")
       INT_B65_D4("h")
       
+    } else if ((kc==3)&&!memcmp(k,"win",3)) {
+      OPCODE('e')
+      INT_B65_D4("x")
+      INT_B65_D4("y")
+      INT_B65_D4("w")
+      INT_B65_D4("h")
+      
     } else {
       fprintf(stderr,"%s:%d: Unexpected stage command '%.*s'\n",refname,lineno,kc,k);
       return -2;

@@ -16,6 +16,7 @@ export class Dot {
     this.clm = 0; // Climbing. Ladder or false.
     this.j = 0; // Jump in progress.
     this.jt = 0; // Jump time remaining.
+    this.ded = 0; // Zero if alive, otherwise counts up during fireworks.
   }
   
   setup(x, y) {
@@ -25,6 +26,8 @@ export class Dot {
   
   die() {
     console.log(`TODO Dot.die()`);
+    this.a.playSong(0);
+    this.ded = 0.001;
   }
   
   jon() {
@@ -44,6 +47,10 @@ export class Dot {
   }
   
   update(s) {
+    if (this.ded) {
+      this.ded += s;
+      return;
+    }
     // If there's extra motion from a platform, Ecom applies it before each update here.
     this.pvy = this.y;
     // Horizontal motion:
@@ -157,6 +164,21 @@ export class Dot {
   }
   
   render() {
+  
+    if (this.ded) {
+      const mx = this.x + 8;
+      const my = this.y + 12;
+      const r = this.ded * 80;
+      let fr = Math.floor(this.ded * 10) & 3;
+      for (let i=0, t=0; i<7; i++, t+=(Math.PI*2)/7) {
+        const dx = Math.floor(mx + Math.cos(t) * r - 3.5);
+        const dy = Math.floor(my + Math.sin(t) * r - 3.5);
+        this.v.blit(dx, dy, fr * 7, 0, 7, 7);
+        if (++fr >= 4) fr = 0;
+      }
+      return;
+    }
+    
     const dx = Math.round(this.x);
     const dy = Math.round(this.y);
     if (this.flp) this.v.flop(dx, dy, 0, 48, 16, 24);

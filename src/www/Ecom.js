@@ -22,9 +22,13 @@ export class Ecom {
     this.dot = new Dot(this, v, a);
     this.wv = []; // {x,y,w,h,dx,dy,c}, walls and platforms
     this.ldrv = []; // {x,y,h}, ladders. Width always 16.
+    this.tkv = []; // {x,y,y0,dx,n,t}, tickets, the little "1", "2", "3" for each keystroke.
+    this.wz = { x:0, y:0, w:0, h:0 }; // Win zone.
+    this.wt = 0; // Win time. Counts down after winning until next reset.
   }
   
   reset(st) {
+    this.st = st;
     this.bdx = 0;
     this.bdy = 0;
     this.bj = 0;
@@ -32,6 +36,8 @@ export class Ecom {
     this.dot.reset();
     this.wv = [];
     this.ldrv = [];
+    this.tkv = [];
+    this.wz = { x:0, y:0, w:0, h:0 };
     const b65 = (s) => {
       s = s.charCodeAt(0);
       if ((s >= 0x41) && (s <= 0x5a)) return s - 0x41;
@@ -87,16 +93,54 @@ export class Ecom {
             const h = b65(st[i++]) << 2;
             this.ldrv.push({ x, y, h });
           } break;
+      
+        case "e": {
+            const x = b65(st[i++]) << 2;
+            const y = b65(st[i++]) << 2;
+            const w = b65(st[i++]) << 2;
+            const h = b65(st[i++]) << 2;
+            this.wz = { x, y, w, h };
+          } break;
       }
     }
   }
   
+  win() {
+    console.log(`TODO Ecom.win`);
+    this.a.playSong(0);
+    this.wt = 2;
+  }
+  
   stk() {
-    this.bc++;
-    console.log(`KEYSTROKE ${this.bc}`);
+    if (this.bc >= 13) return;
+    this.tkv.push({
+      x: this.dot.x + 8 - 3.5,
+      y: this.dot.y - 8,
+      y0: this.dot.y - 8,
+      dx: (this.bdx < 0) ? 1 : (this.bdx > 0) ? -1 : this.dot.flp ? 1 : -1,
+      t: 0,
+      n: this.bc,
+    });
+    if (++this.bc >= 13) {
+      this.dot.die();
+    }
   }
   
   update(s, state) {
+  
+    if (this.wt > 0) {
+      if ((this.wt -= s) <= 0) {
+        const st = this.g.nextStage();
+        if (st) {
+          this.reset(st);
+        } else {
+          console.log(`Game over you win!`);
+          this.reset(this.g.nextStage());
+        }
+      }
+      this.pvs = state;
+      return;
+    }
   
     /* Digest input state, track keystrokes.
      */
@@ -119,8 +163,14 @@ export class Ecom {
       if (state & BTN_A) {
         if (!this.bj) {
           this.bj = 1;
-          this.stk();
-          this.dot.jon();
+          if (this.dot.ded > 0.5) {
+            this.reset(this.st);
+          } else if (this.dot.ded > 0.0) {
+            // Hold
+          } else {
+            this.stk();
+            this.dot.jon();
+          }
         }
       } else if (this.bj) {
         this.bj = 0;
@@ -137,7 +187,7 @@ export class Ecom {
       const dy = wl.dy * s;
       wl.x += dx;
       wl.y += dy;
-      if (this.dot.flr === wl) {
+      if (!this.dot.ded && (this.dot.flr === wl)) {
         this.dot.x += dx;
         this.dot.y += dy;
       }
@@ -148,7 +198,24 @@ export class Ecom {
         wl.y -= dy;
       }
     }
+    for (let i=this.tkv.length; i-->0; ) {
+      const tk = this.tkv[i];
+      tk.t += s;
+      tk.x += tk.dx * s * 10;
+      tk.y = tk.y0 + (tk.t - 0.250) ** 2 * 100;
+      if (tk.y > SCREENH) this.tkv.splice(i, 1);
+    }
     this.dot.update(s);
+    
+    /* Check win.
+     */
+    if (!this.dot.ded) {
+      const x = this.dot.x + 8;
+      const y = this.dot.y + 12;
+      if ((x >= this.wz.x) && (y >= this.wz.y) && (x < this.wz.x + this.wz.w) && (y < this.wz.y + this.wz.h)) {
+        this.win();
+      }
+    }
   }
   
   /* Check moving wall that just moved.
@@ -177,6 +244,7 @@ export class Ecom {
   
   render() {
     this.v.rect(0, 0, SCREENW, SCREENH, "#68a");
+    this.v.rect(this.wz.x, this.wz.y, this.wz.w, this.wz.h, "#0f0");
     for (const wl of this.wv) {
       if (!wl.c) continue;
       const x = Math.round(wl.x);
@@ -189,5 +257,8 @@ export class Ecom {
       this.v.rect(x, y, 16, ldr.h, "#800");
     }
     this.dot.render();
+    for (const tk of this.tkv) {
+      this.v.blit(Math.floor(tk.x), Math.floor(tk.y), 28 + tk.n * 7, 0, 7, 7);
+    }
   }
 }

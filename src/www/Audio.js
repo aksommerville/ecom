@@ -42,6 +42,7 @@ export class Audio {
     this.song = 0;
     this.songp = 0;
     this.songDelay = 0; // s
+    this.vv = [];
     /*IGNORE{*/
     if (false)
     /*}IGNORE*/
@@ -170,11 +171,15 @@ export class Audio {
     osc.connect(env);
     env.connect(this.ctx.destination);
     osc.start();
+    const v = { env, osc, modgain, mod };
+    this.vv.push(v);
     setTimeout(() => {
       env.disconnect();
       osc.stop();
       if (modgain) modgain.disconnect();
       if (mod) { mod.stop(); mod.disconnect(); }
+      const p = this.vv.indexOf(v);
+      if (p >= 0) this.vv.splice(p, 1);
     }, (tr - this.ctx.currentTime) * 1000);
   }
   
@@ -189,6 +194,16 @@ export class Audio {
   }
   
   ps(src) {
+    for (const v of this.vv) {
+      if (!v.env.gain.value) {
+        v.env.disconnect();
+      } else {
+        v.env.gain.cancelScheduledValues(0);
+        v.env.gain.setValueAtTime(v.env.gain.value, this.ctx.currentTime);
+        v.env.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.100);
+      }
+    }
+    this.vv = [];
     if (src && (src.length > 1) && this.ctx) {
       this.song = src;
       this.songp = 1;

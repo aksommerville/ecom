@@ -14,12 +14,15 @@ Everything is copied; no need to clone that repo to build this one.
 - - [x] Platform
 - [x] Ladder
 - [x] Jump
-- [ ] Game logic
-- - [ ] Explode
-- - [ ] Show step count
-- - [ ] Win level
+- [x] Game logic
+- - [x] Explode
+- - [x] Show step count
+- - [x] Win level
 - [ ] Graphics
 - [ ] Sound effects
 - [ ] Music
 - [ ] Hello splash
 - [ ] Farewell splash
+- [x] Audio: Cancel pending notes on song change! Or never change the song.
+- [ ] Audio: Occassionally a too-loud note as it cancels. Hard to repro.
+- [ ] Don't die when squashed, find another way to handle it. Possible to just kiss your toe against a platform and die because of it.

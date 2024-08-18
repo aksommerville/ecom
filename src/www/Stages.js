@@ -90,6 +90,14 @@ export class Stages {
             base65_div4(words[2]);
             base65_div4(words[3]);
           } break;
+          
+        case "win": {
+            dst += "e";
+            base65_div4(words[1]);
+            base65_div4(words[2]);
+            base65_div4(words[3]);
+            base65_div4(words[4]);
+          } break;
       
         default: throw new Error(`${href}:${lineno}: Unexpected command ${JSON.stringify(words[0])}`);
       }

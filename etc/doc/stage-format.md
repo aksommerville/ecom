@@ -19,3 +19,4 @@ Spatial arguments, multiply by 4.
 | song NAME              | s NAME .                         | Song names can't contain a dot. |
 | platform X Y W H DX DY | p X Y W H DX DY                  | Pixels. DX,DY bias by -32 compiled. |
 | ladder X Y H           | l X Y H                          | Width always 16. |
+| win X Y W H            | e X Y W H                        | Dot's center in range, she wins. |
