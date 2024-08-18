@@ -11,8 +11,11 @@ export class Dot {
     this.x = 0;
     this.y = 0;
     this.gr = 80;
-    this.flr = 0; // Wall from (this.e.wv), 1 for screen bottom, 0 if not seated.
+    this.flr = 0; // Wall or ladder from (this.e.wv,ldrv), 1 for screen bottom, 0 if not seated.
     this.flp = 0; // Nonzero if facing right.
+    this.clm = 0; // Climbing. Ladder or false.
+    this.j = 0; // Jump in progress.
+    this.jt = 0; // Jump time remaining.
   }
   
   setup(x, y) {
@@ -20,27 +23,52 @@ export class Dot {
     this.y = y;
   }
   
-  foot() {
-    for (const o of this.e.wv) {
-      const dy = this.y + this.h - o.y;
-      if (dy <= -1) continue;
-      if (dy >= 1) continue;
-      if (this.x >= o.x + o.w) continue;
-      if (this.x + 16 <= o.x) continue;
-      return o;
+  die() {
+    console.log(`TODO Dot.die()`);
+  }
+  
+  jon() {
+    if (this.clm || this.flr) {
+      // TODO Jump sound effect
+      this.clm = 0;
+      this.flr = 0;
+      this.j = 1;
+      this.jt = 0.375;
+    } else {
+      // TODO Reject-jump sound effect
     }
-    return 0;
+  }
+  
+  joff() {
+    this.j = 0;
   }
   
   update(s) {
     // If there's extra motion from a platform, Ecom applies it before each update here.
+    this.pvy = this.y;
     // Horizontal motion:
     if (this.e.bdx) {
       this.x += this.e.bdx * s * 120; // px/s
       this.flp = this.e.bdx < 0;
+      this.clm = 0;
+    }
+    // Climb ladders:
+    if (this.e.bdy) {
+      if (this.clm = this.fldr()) {
+        this.y += this.e.bdy * s * 80;
+        if (this.y < this.clm.y - 24) this.y = this.clm.y - 24;
+        this.x = this.clm.x; // Ladders and Dot both always 16 width.
+        this.flr = 0;
+      }
     }
     // Gravity etc:
-    if (this.flr === 1) {
+    if (this.clm) {
+    } else if (this.j && this.jt) {
+      this.y -= s * this.jt * 550;
+      if ((this.jt -= s) <= 0) {
+        this.jt = 0;
+      }
+    } else if (this.flr === 1) {
       this.y = SCREENH - 24;
     } else if (this.flr) {
       this.y = this.flr.y - 24;
@@ -53,14 +81,22 @@ export class Dot {
   }
   
   collide() {
-    let nflr = 0;
+    let nflr=0, lc=0, rc=0, uc=0, dc=0;
     // Unceremoniously clamp into screen boundaries:
-    if (this.x < 0) this.x = 0;
-    else if (this.x > SCREENW - 16) this.x = SCREENW - 16;
-    if (this.y < 0) this.y = 0;
-    else if (this.y > SCREENH - 24) {
+    if (this.x < 0) {
+      this.x = 0;
+      lc++;
+    } else if (this.x > SCREENW - 16) {
+      this.x = SCREENW - 16;
+      rc++;
+    }
+    if (this.y < 0) {
+      this.y = 0;
+      uc++;
+    } else if (this.y >= SCREENH - 24) {
       nflr = 1;
       this.y = SCREENH - 24;
+      dc++;
     }
     // Check all walls:
     for (const wl of this.e.wv) {
@@ -70,20 +106,54 @@ export class Dot {
       const de = this.y + 24 - wl.y; if (de < 0) continue;
       if ((le <= re) && (le <= ue) && (le <= de)) {
         this.x = wl.x + wl.w;
+        lc++;
+        this.clm = 0;
       } else if ((re <= ue) && (re <= de)) {
         this.x = wl.x - 16;
+        rc++;
+        this.clm = 0;
       } else if (ue <= de) {
         this.y = wl.y + wl.h;
+        uc++;
       } else {
         this.y = wl.y - 24;
         nflr = wl;
+        dc++;
       }
+    }
+    // Ladder top edges also behave like platforms, when we're not climbing.
+    if (!this.clm) {
+      for (const ldr of this.e.ldrv) {
+        if (this.x >= ldr.x + 16) continue;
+        if (this.x + 16 <= ldr.x) continue;
+        if (this.pvy + 24 > ldr.y) continue;
+        if (this.y + 24 < ldr.y) continue;
+        this.y = ldr.y - 24;
+        nflr = ldr;
+        uc++;
+      }
+    }
+    // If we collided from opposite edges, die.
+    if ((lc && rc) || (uc && dc)) {
+      this.die();
     }
     // Reset gravity etc when floor changes:
     if (nflr !== this.flr) {
       this.flr = nflr;
       this.gr = 80;
     }
+  }
+  
+  // Find ladder.
+  fldr() {
+    for (const ldr of this.e.ldrv) {
+      if (this.x + 8 < ldr.x) continue;
+      if (this.y + 24 < ldr.y) continue; // sic < not <=, important
+      if (this.x + 8 >= ldr.x + 16) continue;
+      if (this.y > ldr.y + ldr.h) continue;
+      return ldr;
+    }
+    return 0;
   }
   
   render() {

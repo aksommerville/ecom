@@ -18,3 +18,4 @@ Spatial arguments, multiply by 4.
 | bg RGB                 | b R G B                          | Hexadecimal, not base64. (both formats) |
 | song NAME              | s NAME .                         | Song names can't contain a dot. |
 | platform X Y W H DX DY | p X Y W H DX DY                  | Pixels. DX,DY bias by -32 compiled. |
+| ladder X Y H           | l X Y H                          | Width always 16. |

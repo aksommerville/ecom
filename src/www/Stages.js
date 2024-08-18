@@ -83,6 +83,13 @@ export class Stages {
             base65_div4(+words[5] + 128);
             base65_div4(+words[6] + 128);
           } break;
+          
+        case "ladder": {
+            dst += "l";
+            base65_div4(words[1]);
+            base65_div4(words[2]);
+            base65_div4(words[3]);
+          } break;
       
         default: throw new Error(`${href}:${lineno}: Unexpected command ${JSON.stringify(words[0])}`);
       }

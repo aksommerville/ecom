@@ -21,6 +21,7 @@ export class Ecom {
     // Model state:
     this.dot = new Dot(this, v, a);
     this.wv = []; // {x,y,w,h,dx,dy,c}, walls and platforms
+    this.ldrv = []; // {x,y,h}, ladders. Width always 16.
   }
   
   reset(st) {
@@ -30,6 +31,7 @@ export class Ecom {
     this.bc = 0;
     this.dot.reset();
     this.wv = [];
+    this.ldrv = [];
     const b65 = (s) => {
       s = s.charCodeAt(0);
       if ((s >= 0x41) && (s <= 0x5a)) return s - 0x41;
@@ -78,6 +80,13 @@ export class Ecom {
             const dy = (b65(st[i++]) << 2) - 128;
             this.wv.push({ x, y, w, h, dx, dy, c: "#840", hold:0 });
           } break;
+      
+        case "l": {
+            const x = b65(st[i++]) << 2;
+            const y = b65(st[i++]) << 2;
+            const h = b65(st[i++]) << 2;
+            this.ldrv.push({ x, y, h });
+          } break;
       }
     }
   }
@@ -111,9 +120,11 @@ export class Ecom {
         if (!this.bj) {
           this.bj = 1;
           this.stk();
+          this.dot.jon();
         }
       } else if (this.bj) {
         this.bj = 0;
+        this.dot.joff();
       }
       this.pvs = state;
     }
@@ -171,6 +182,11 @@ export class Ecom {
       const x = Math.round(wl.x);
       const y = Math.round(wl.y);
       this.v.rect(x, y, wl.w, wl.h, wl.c);
+    }
+    for (const ldr of this.ldrv) {
+      const x = Math.round(ldr.x);
+      const y = Math.round(ldr.y);
+      this.v.rect(x, y, 16, ldr.h, "#800");
     }
     this.dot.render();
   }

@@ -108,6 +108,12 @@ int minify_stage(const char *src,int srcc,const char *refname) {
       INT_B65_D4_SIGNED("dx")
       INT_B65_D4_SIGNED("dy")
       
+    } else if ((kc==6)&&!memcmp(k,"ladder",6)) {
+      OPCODE('l')
+      INT_B65_D4("x")
+      INT_B65_D4("y")
+      INT_B65_D4("h")
+      
     } else {
       fprintf(stderr,"%s:%d: Unexpected stage command '%.*s'\n",refname,lineno,kc,k);
       return -2;

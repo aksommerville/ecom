@@ -12,6 +12,8 @@ Everything is copied; no need to clone that repo to build this one.
 - [x] Physics
 - - [x] Hero
 - - [x] Platform
+- [x] Ladder
+- [x] Jump
 - [ ] Game logic
 - - [ ] Explode
 - - [ ] Show step count
