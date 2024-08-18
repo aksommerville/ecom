@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html {
+  background-color: #000;
+  cursor: none;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+canvas {
+  image-rendering: pixelated;
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+}
+img {
+  display: none;
+}
+song {
+  display: none;
+}
+stage {
+  display: none;
+}
+</style>
+<img src="./graphics.png"/>
+<song href="./song/totd.mid"></song>
+<song href="./song/hos.mid"></song>
+<stage href="./stage/1"></stage>
+<stage href="./stage/2"></stage>
+<script type="module" src="./bootstrap.js"></script>
+</head>
+<body>
+<canvas></canvas>
+</body>
+</html>
