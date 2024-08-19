@@ -10,7 +10,7 @@ Everything is copied; no need to clone that repo to build this one.
 ## TODO
 
 - [ ] Maybe not Dust Devil for the main theme. We need something that gets to the point within like 5 seconds. Levels are short.
-- [ ] Victory splash
+- [x] Victory splash
 - [x] Experiment with PNG formats, maybe we can reduce size by using index instead of RGBA. ...no need
 - [ ] Minicomic.
 - [x] Draw the background more efficiently, it's embarrassing.
@@ -28,3 +28,8 @@ Everything is copied; no need to clone that repo to build this one.
 - [ ] 2024-09-08 Plan to be completely done by EOD.
 - [ ] 2024-09-12 Final submission.
 - [ ] 2024-09-13T07-ish Submissions close. (1300 CEST)
+
+## High Scores
+
+2024-08-19 87,74: 241
+2024-08-19 143,178: 40

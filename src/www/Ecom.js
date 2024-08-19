@@ -24,8 +24,13 @@ export class Ecom {
     this.ldrv = []; // {x,y,h}, ladders. Width always 16.
     this.tkv = []; // {x,y,y0,dx,n,t}, tickets, the little "1", "2", "3" for each keystroke.
     this.wz = { x:0, y:0, w:0, h:0 }; // Win zone.
-    this.wt = 0; // Win time. Counts up after winning.
+    this.wt = 0; // Win time. Counts up after winning stage.
     this.dt = 0; // Dead time. Counts up.
+    this.fin = 0; // Counts up during final menu.
+    this.tt = 0; // Total play time.
+    this.sc = 0; // Total step count.
+    this.dc = 0; // Total death count.
+    this.scr = 0; // Score, only populated when (fin).
   }
   
   reset(st) {
@@ -112,9 +117,37 @@ export class Ecom {
       t: 0,
       n: this.bc,
     });
+    this.sc++;
     if (++this.bc >= 13) {
       this.dot.die();
     }
+  }
+  
+  /* Ecom.victory time= 88.91100000000128 steps= 72 deaths=0 score=0 -- nearly perfect
+   * Ecom.victory time=142.38899999999757 steps=163 deaths=4 score=0 -- deliberately screwing around
+   * Death is a single bonus, all or nothing.
+   * Time and steps should be an open-ended bonus. Be generous.
+   * They happen to line up well enough to use 169 as the threshold, cool. (that's 13 squared).
+   * Don't cap the time or step scores individually because who knows maybe somebody finds a path I didn't.
+   * But do enforce a total cap.
+   * Include pity points too, a bonus just for finishing, so you'll never actually see a zero score.
+   */
+  victory() {
+    this.fin = 0.001;
+    this.cscr = 13;
+    this.ttscr = Math.round(Math.max(0, 170 - this.tt));
+    this.scscr = Math.max(0, 170 - this.sc);
+    this.dscr = (this.dc ? 0 : 50);
+    this.scr = this.cscr + this.ttscr + this.scscr + this.dscr;
+  }
+  
+  restart() {
+    this.fin = 0;
+    this.tt = 0;
+    this.sc = 0;
+    this.dc = 0;
+    this.scr = 0;
+    this.reset(this.g.nextStage());
   }
   
   update(s, state) {
@@ -127,6 +160,17 @@ export class Ecom {
     if (this.dot.ded) {
       this.dt += s;
     }
+    if (this.fin > 0) {
+      this.fin += s;
+      if (state !== this.pvs) {
+        if ((state & BTN_A) && (!(this.pvs & BTN_A)) && (this.fin > 0.5)) {
+          this.restart();
+        }
+        this.pvs = state;
+      }
+      return;
+    }
+    if (!this.wt && !this.dot.ded) this.tt += s;
   
     /* Digest input state, track keystrokes.
      */
@@ -157,8 +201,8 @@ export class Ecom {
             if (st) {
               this.reset(st);
             } else {
-              console.log(`Game over, victory!`);
-              this.reset(this.g.nextStage());
+              this.victory();
+              return;
             }
           } else if (this.dot.ded > 0.5) {
             this.reset(this.st);
@@ -239,7 +283,19 @@ export class Ecom {
     return 0;
   }
   
+  rfin() {
+    this.v.rect(0, 0, SCREENW, SCREENH, "#466");
+    this.v.blit( 80, 40, 32, 31, 37, 5);                                     this.v.decint(160, 40, this.cscr, 3);
+    this.v.blit(100, 47, 32, 36, 17, 5); this.v.decint(120, 47, this.tt, 5); this.v.decint(160, 47, this.ttscr, 3);
+    this.v.blit( 93, 54, 32, 41, 24, 5); this.v.decint(120, 54, this.sc, 5); this.v.decint(160, 54, this.scscr, 3);
+    this.v.blit( 93, 61, 32, 46, 24, 5); this.v.decint(120, 61, this.dc, 5); this.v.decint(160, 61, this.dscr, 3);
+    this.v.decint(160, 70, this.scr, 3);
+    this.v.rect(160, 68, 17, 1, "#888");
+    this.v.blit(60, 60, ((this.fin * 5) & 1) ? 16 : 0, 31, 16, 24);
+  }
+  
   render() {
+    if (this.fin) return this.rfin();
     this.v.bg();
     for (const wl of this.wv) {
       if (wl.c) continue;

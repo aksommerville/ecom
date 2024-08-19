@@ -40,6 +40,18 @@ export class Video {
     this.c.restore();
   }
   
+  decint(x, y, v, dc) {
+    v = Math.floor(v);
+    let p = 10 ** dc;
+    let started = 0;
+    for (; p>=1; p/=10, x+=4) {
+      const digit = Math.floor(v / p) % 10;
+      if (!digit && !started && (p > 1)) continue;
+      started = 1;
+      this.blit(x, y, 88 + 3 * digit, 15, 3, 5);
+    }
+  }
+  
   bblit(dx, dy, sx, sy, w, h) {
     this.bc.drawImage(this.src, sx, sy, w, h, dx, dy, w, h);
   }

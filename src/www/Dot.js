@@ -29,6 +29,7 @@ export class Dot {
   
   die() {
     if (this.e.wt) return;
+    this.e.dc++;
     this.a.snd(SND_DIE);
     this.a.playSong("tts");
     this.ded = 0.001;
