@@ -3,7 +3,7 @@ bg 8ac
 hero 44 128
 win 168 68 32 16
 platform 28 32 32 0 -80
-platform 220 32 32 0 80
+platform 220 4 32 0 80
 wall 0 128 256 16
 wall 0 0 24 72
 wall 0 108 24 20

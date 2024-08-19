@@ -68,6 +68,7 @@ export class Audio {
     if (s.length > 3) {
       const stept = (tr - t0) / (s.length - 3);
       let t=t0, i=3;
+      osc.frequency.setValueAtTime(s[2], t0);
       for (;i<s.length;i++) {
         t+=stept;
         osc.frequency.linearRampToValueAtTime(s[i], t);
@@ -197,11 +198,15 @@ export class Audio {
   
   ps(src, once) {
     for (const v of this.vv) {
-      if (!v.env.gain.value) {
+      if (v.env.gain.value >= 1) { 
+        // I don't know why this happens, but from time to time it does.
+        // Disconnecting immediately seems to prevent any noise.
+        v.env.disconnect();
+      } else if (!v.env.gain.value) {
         v.env.disconnect();
       } else {
         v.env.gain.cancelScheduledValues(0);
-        v.env.gain.setValueAtTime(v.env.gain.value, this.ctx.currentTime);
+        v.env.gain.setValueAtTime(v.env.gain.value, 0);
         v.env.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.100);
       }
     }
