@@ -90,14 +90,13 @@ int minify_stage(const char *src,int srcc,const char *refname) {
       OPCODE('h')
       INT_B65_D4("x")
       INT_B65_D4("y")
-      
+    
+    // We accept "bg" and "song" because my source files all have them, and I'm not bothering to remove from the editor.
+    // Runtime will not accept them anymore.
     } else if ((kc==2)&&!memcmp(k,"bg",2)) {
-      OPCODE('b')
-      FIXED_HEX(3,"rgb")
-      
+      linep=linec;
     } else if ((kc==4)&&!memcmp(k,"song",4)) {
-      OPCODE('s')
-      STRING('.',"name")
+      linep=linec;
       
     } else if ((kc==8)&&!memcmp(k,"platform",8)) {
       OPCODE('p')

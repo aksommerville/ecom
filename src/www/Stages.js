@@ -61,17 +61,17 @@ export class Stages {
             base65_div4(words[3]);
             base65_div4(words[4]);
           } break;
-          
+        
+        // "bg" and "song" are vestigial. Accept but ignore.
         case "bg": {
-            dst += "b";
-            if (words[1].length !== 3) throw new Error(`${href}:${lineno}: Expected "RGB" after "bg"`);
-            dst += words[1];
+            //dst += "b";
+            //if (words[1].length !== 3) throw new Error(`${href}:${lineno}: Expected "RGB" after "bg"`);
+            //dst += words[1];
           } break;
-          
         case "song": {
-            dst += "s";
-            dst += words[1];
-            dst += ".";
+            //dst += "s";
+            //dst += words[1];
+            //dst += ".";
           } break;
           
         case "platform": {

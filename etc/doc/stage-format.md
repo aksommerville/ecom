@@ -15,8 +15,8 @@ Spatial arguments, multiply by 4.
 |------------------------|----------------------------------|-------|
 | wall X Y W H           | w X Y W H                        | Text in pixels, compiled in 4 pixels. |
 | hero X Y               | h X Y                            | Pixels. Horizontal center, vertical bottom. |
-| bg RGB                 | b R G B                          | Hexadecimal, not base64. (both formats) |
-| song NAME              | s NAME .                         | Song names can't contain a dot. |
+| bg RGB                 |                                  | Vestigial. Compiler drops it. |
+| song NAME              |                                  | Vestigial. Compiler drops it. |
 | platform X Y W DX DY   | p X Y W DX DY                    | Pixels. DX,DY bias by -32 compiled. Height always 8. |
 | ladder X Y H           | l X Y H                          | Width always 16. |
 | win X Y W H            | e X Y W H                        | Dot's center in range, she wins. |

@@ -39,7 +39,7 @@ export class Ecom {
     this.ldrv = [];
     this.tkv = [];
     this.wz = { x:0, y:0, w:0, h:0 };
-    this.bgc = "#8af";
+    this.a.playSong("dd");
     const b65 = (s) => {
       s = s.charCodeAt(0);
       if ((s >= 0x41) && (s <= 0x5a)) return s - 0x41;
@@ -66,17 +66,6 @@ export class Ecom {
             const x = (b65(st[i++]) << 2) - 8;
             const y = (b65(st[i++]) << 2) - 24;
             this.dot.setup(x, y);
-          } break;
-          
-        case "b": {
-            this.bgc = "#" + st.substring(i, i + 3);
-            i += 3;
-          } break;
-          
-        case "s": {
-            const termp = st.indexOf(".", i);
-            this.a.playSong(st.substring(i, termp));
-            i = termp + 1;
           } break;
       
         case "p": {
@@ -278,7 +267,7 @@ export class Ecom {
   }
   
   rbg() {
-    this.v.bc.fillStyle = this.bgc;
+    this.v.bc.fillStyle = "#8ac";
     this.v.bc.fillRect(0, 0, SCREENW, SCREENH);
     
     for (const wl of this.wv) {
