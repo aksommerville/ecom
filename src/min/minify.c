@@ -136,16 +136,20 @@ static int html_get_attribute(void *dstpp,const char *src,int srcc,const char *k
 
 /* Require a closing tag of the given tagname to be next, return distance across it.
  * Whitespace is permitted but comments are not: This is typically used within <style> or <script> blocks.
+ * ...but if (allow_text), we allow and discard all inner text. Still no tags or comments though.
  */
 
-int consume_closing_tag(const char *src,int srcc,const char *name,int namec) {
+int consume_closing_tag(const char *src,int srcc,const char *name,int namec,int allow_text) {
   if (!name) namec=0; else if (namec<0) { namec=0; while (name[namec]) namec++; }
   if (namec<1) return -1;
   int srcp=0;
   for (;;) {
     if (srcp>=srcc) return -1;
     if ((unsigned char)src[srcp]<=0x20) { srcp++; continue; }
-    if (src[srcp++]!='<') return -1;
+    if (src[srcp++]!='<') {
+      if (allow_text) continue;
+      return -1;
+    }
     while ((srcp<srcc)&&((unsigned char)src[srcp]<=0x20)) srcp++; // I think whitespace is actually forbidden here, not sure.
     if ((srcp>=srcc)||(src[srcp++]!='/')) return -1;
     while ((srcp<srcc)&&((unsigned char)src[srcp]<=0x20)) srcp++;
@@ -389,7 +393,7 @@ static int minify_open(const char *src,int srcc,const char *post,int postc) {
     if (hrefc>0) {
       int err=minify_external_js(href,hrefc);
       if (err<0) return err;
-      return consume_closing_tag(post,postc,"script",6);
+      return consume_closing_tag(post,postc,"script",6,0);
     }
     int err=minify_js(post,postc,1,0);
     if (err<0) return err;
@@ -406,7 +410,7 @@ static int minify_open(const char *src,int srcc,const char *post,int postc) {
     }
     int err=minify_external_song(href,hrefc);
     if (err<0) return err;
-    return consume_closing_tag(post,postc,"song",4);
+    return consume_closing_tag(post,postc,"song",4,1);
   }
   
   if ((tagc==5)&&!memcmp(tag,"stage",5)) {
@@ -418,7 +422,7 @@ static int minify_open(const char *src,int srcc,const char *post,int postc) {
     }
     int err=minify_external_stage(href,hrefc);
     if (err<0) return err;
-    return consume_closing_tag(post,postc,"stage",5);
+    return consume_closing_tag(post,postc,"stage",5,1);
   }
 
   // General case: Emit it verbatim and push on the tag stack.

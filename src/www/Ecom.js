@@ -25,6 +25,7 @@ export class Ecom {
     this.tkv = []; // {x,y,y0,dx,n,t}, tickets, the little "1", "2", "3" for each keystroke.
     this.wz = { x:0, y:0, w:0, h:0 }; // Win zone.
     this.wt = 0; // Win time. Counts up after winning.
+    this.dt = 0; // Dead time. Counts up.
   }
   
   reset(st) {
@@ -107,7 +108,7 @@ export class Ecom {
   }
   
   win() {
-    console.log(`TODO Ecom.win`);
+    if (this.dot.ded) return;
     this.a.playSong("taf", 1);
     this.wt = 0.01;
   }
@@ -133,6 +134,9 @@ export class Ecom {
       this.wt += s;
       this.bdx = 0;
       this.bdy = 0;
+    }
+    if (this.dot.ded) {
+      this.dt += s;
     }
   
     /* Digest input state, track keystrokes.
@@ -191,7 +195,7 @@ export class Ecom {
       const dy = wl.dy * s;
       wl.x += dx;
       wl.y += dy;
-      if (!this.dot.ded && (this.dot.flr === wl)) {
+      if (!this.dot.ded && !this.wt && (this.dot.flr === wl)) {
         this.dot.x += dx;
         this.dot.y += dy;
       }
@@ -261,6 +265,15 @@ export class Ecom {
     this.dot.render();
     for (const tk of this.tkv) {
       this.v.blit(Math.floor(tk.x), Math.floor(tk.y), 28 + tk.n * 7, 0, 7, 7);
+    }
+    this.v.blit(1, SCREENH - 6, 88 + Math.floor(this.bc / 10) * 3, 15, 3, 5);
+    this.v.blit(5, SCREENH - 6, 88 + (this.bc % 10) * 3, 15, 3, 5);
+    if (this.wt) {
+      this.v.rect(99, 137, 58, 6, ((this.wt * 2) & 1) ? "#000" : "#084");
+      this.v.blit(100, 138, 64, 23, 56, 4);
+    } else if (this.dot.ded) {
+      this.v.rect(99, 137, 64, 6, ((this.dt * 2) & 1) ? "#000" : "#408");
+      this.v.blit(100, 138, 64, 27, 62, 4);
     }
   }
   

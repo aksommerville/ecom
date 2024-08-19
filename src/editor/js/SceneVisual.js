@@ -203,6 +203,8 @@ export class SceneVisual {
       return;
     }
     
+    const clone = event.ctrlKey;
+    
     if (found === "hero") {
       this.dragObjX = this.scene.hero.x;
       this.dragObjY = this.scene.hero.y;
@@ -216,16 +218,19 @@ export class SceneVisual {
       this.dragObjY = found.wall.y;
       this.dragObjW = found.wall.w;
       this.dragObjH = found.wall.h;
+      if (clone) this.scene.walls.push({...found.wall});
     } else if (found.ladder) {
       this.dragObjX = found.ladder.x;
       this.dragObjY = found.ladder.y;
       this.dragObjW = found.ladder.w;
       this.dragObjH = found.ladder.h;
+      if (clone) this.scene.ladders.push({...found.ladder});
     } else if (found.platform) {
       this.dragObjX = found.platform.x;
       this.dragObjY = found.platform.y;
       this.dragObjW = found.platform.w;
       this.dragObjH = found.platform.h;
+      if (clone) this.scene.platforms.push({...found.platform});
     } else {
       return;
     }

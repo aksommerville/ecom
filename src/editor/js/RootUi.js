@@ -12,11 +12,12 @@ export class RootUi {
   }
   
   setup(scenes) {
-    this.scenes = scenes;
+    this.scenes = [...scenes];
+    this.scenes.sort((a, b) => +a - +b);
     this.element.innerHTML = "";
     
     const sidebar = this.dom.spawn(this.element, "UL", ["sidebar"]);
-    for (const scene of scenes) {
+    for (const scene of this.scenes) {
       this.dom.spawn(sidebar, "LI", { "data-scene": scene, "on-click": () => this.navigateToScene(scene) }, scene);
     }
     this.dom.spawn(sidebar, "LI", { "on-click": () => this.newScene() }, "NEW");
@@ -57,7 +58,10 @@ export class RootUi {
     }
     const name = id.toString();
     this.scenes.push(name);
-    const body = "";
+    const body = 
+      "bg 8ac\n" +
+      "song dd\n" +
+      "wall 0 128 256 16\n";
     this.window.fetch("/data/stage/" + name, {
       method: "PUT",
       body,

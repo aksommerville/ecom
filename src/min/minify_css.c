@@ -118,7 +118,7 @@ int minify_css(const char *src,int srcc,int require_closing_tag,const char *refn
 
     if (src[srcp]=='<') {
       if (!require_closing_tag) break;
-      int err=consume_closing_tag(src+srcp,srcc-srcp,"style",5);
+      int err=consume_closing_tag(src+srcp,srcc-srcp,"style",5,0);
       if (err<0) return css_error(src,srcp,refname,"Expected '</style>'");
       srcp+=err;
       break;

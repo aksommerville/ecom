@@ -23,7 +23,7 @@ export class Scene {
     this.song = "";
     this.platforms = []; // {x,y,w,dx,dy} h always 8
     this.ladders = []; // {x,y,h} w always 16
-    this.win = {x:0, y:0, w:32,h:32};
+    this.win = {x:0, y:0, w:32, h:16};
     
     for (const line of serial.split("\n").map(line => line.split("#")[0].trim())) {
       if (!line) continue;

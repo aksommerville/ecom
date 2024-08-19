@@ -52,7 +52,7 @@ int minify_song(const void *src,int srcc,const char *refname);
 int minify_stage(const char *src,int srcc,const char *refname);
 
 int lineno(const char *src,int srcc);
-int consume_closing_tag(const char *src,int srcc,const char *name,int namec);
+int consume_closing_tag(const char *src,int srcc,const char *name,int namec,int allow_text);
 int resolve_path(char *dst,int dsta,const char *ref,const char *src,int srcc);
 int identifier_from_sequence(char *dst,int dsta,int seq);
 
