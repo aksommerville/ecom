@@ -10,16 +10,11 @@ Everything is copied; no need to clone that repo to build this one.
 ## TODO
 
 - [ ] Maybe not Dust Devil for the main theme. We need something that gets to the point within like 5 seconds. Levels are short.
-- [x] Hello splash. Nah, not necessary.
 - [ ] Victory splash
-- [x] Audio: Occassionally a too-loud note as it cancels. Hard to repro.
-- [ ] Experiment with PNG formats, maybe we can reduce size by using index instead of RGBA.
+- [x] Experiment with PNG formats, maybe we can reduce size by using index instead of RGBA. ...no need
 - [ ] Minicomic.
-- [ ] Draw the background more efficiently, it's embarrassing.
-- [x] No need to include song or background color in stage; they are always the same.
+- [x] Draw the background more efficiently, it's embarrassing.
 - [ ] Validate in major OS and browsers:
-- - [x] Linux Chrome
-- - [x] Linux Firefox
 - - [ ] MacOS Chrome
 - - [ ] MacOS Firefox
 - - [ ] Windows Chrome

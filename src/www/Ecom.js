@@ -270,60 +270,68 @@ export class Ecom {
     this.v.bc.fillStyle = "#8ac";
     this.v.bc.fillRect(0, 0, SCREENW, SCREENH);
     
+    /* Walls.
+     * First generate a bitmap representing 4x4-pixel tiles, the smallest unit we draw. (wall positions and sizes must be multiples of 4).
+     * Include a border, which is all ON. So we don't have to check bounds.
+     */
+    const colc = (SCREENW >> 2) + 2;
+    const rowc = (SCREENH >> 2) + 2;
+    const bm = new Uint8Array(colc * rowc);
+    for (let x=0; x<colc; x++) bm[x] = bm[colc*rowc-x] = 1;
+    for (let y=0; y<rowc; y++) bm[y*colc] = bm[(y+1)*colc-1] = 1;
     for (const wl of this.wv) {
       if (!wl.c) continue;
-      const colc = wl.w >> 2;
-      const rowc = wl.h >> 2;
-      const x0 = Math.round(wl.x);
-      let y = Math.round(wl.y);
-      for (let yi=rowc; yi-->0; y+=4) {
-        for (let x=x0, xi=colc; xi-->0; x+=4) {
-          // This is criminally inefficient but meh. It only happens once per level.
-          const nv = [
-            this.ckw(x - 2, y - 2),
-            this.ckw(x + 2, y - 2),
-            this.ckw(x + 6, y - 2),
-            this.ckw(x - 2, y + 2),
-            this.ckw(x + 6, y + 2),
-            this.ckw(x - 2, y + 6),
-            this.ckw(x + 2, y + 6),
-            this.ckw(x + 6, y + 6),
-          ];
-          if (nv[1] && nv[3] && nv[4] && nv[6]) { // All cardinals.
-            if (nv[0] && nv[2] && nv[5] && nv[7]) { // All diagonals.
-              this.v.bblit(x, y, 120, 7, 4, 4);
-            } else if (!nv[0]) { // NW missing. It's not possible for more than one to be missing; walls must be at least 2 rows and columns thick (8 pixels).
-              this.v.bblit(x, y, 108, 11, 4, 4);
-            } else if (!nv[2]) {
-              this.v.bblit(x, y, 104, 11, 4, 4);
-            } else if (!nv[5]) {
-              this.v.bblit(x, y, 108, 7, 4, 4);
-            } else {
-              this.v.bblit(x, y, 104, 7, 4, 4);
-            }
-          } else if (nv[1] && nv[3] && nv[4]) { // 3 cardinals: flat edge.
-            this.v.bblit(x, y, 112, 7, 4, 4);
-          } else if (nv[1] && nv[3] && nv[6]) {
-            this.v.bblit(x, y, 116, 11, 4, 4);
-          } else if (nv[1] && nv[4] && nv[6]) {
-            this.v.bblit(x, y, 112, 11, 4, 4);
-          } else if (nv[3] && nv[4] && nv[6]) {
-            this.v.bblit(x, y, 116, 7, 4, 4);
-          } else if (nv[1] && nv[3]) { // 2 cardinals: corner.
-            this.v.bblit(x, y, 100, 11, 4, 4);
-          } else if (nv[1] && nv[4]) {
-            this.v.bblit(x, y, 96, 11, 4, 4);
-          } else if (nv[3] && nv[6]) {
-            this.v.bblit(x, y, 100, 7, 4, 4);
-          } else if (nv[4] && nv[6]) {
-            this.v.bblit(x, y, 96, 7, 4, 4);
-          } else { // Nothing else should be possible. But we do have a singleton tile just in case.
-            this.v.bblit(x, y, 124, 11, 4, 4);
+      const x=(wl.x>>2)+1, y=(wl.y>>2)+1, w=wl.w>>2, h=wl.h>>2;
+      let rp = y*colc+x;
+      for (let yi=h; yi-->0; rp+=colc) {
+        for (let xp=rp, xi=w; xi-->0; xp++) bm[xp] = 1;
+      }
+    }
+    
+    /* Now ignore the wall objects and draw it from the bitmap.
+     * Neighbor detection is a snap.
+     */
+    for (let y=0, rp=colc+1, yi=SCREENH>>2; yi-->0; rp+=colc, y+=4) {
+      for (let x=0, xp=rp, xi=SCREENW>>2; xi-->0; xp++, x+=4) {
+        if (!bm[xp]) continue;
+        const nw=bm[xp-colc-1], n=bm[xp-colc], ne=bm[xp-colc+1],
+              w=bm[xp-1], e=bm[xp+1],
+              sw=bm[xp+colc-1], s=bm[xp+colc], se=bm[xp+colc+1];
+        if (n && w && e && s) {
+          if (nw && ne && sw && se) { // All neighbors present.
+            this.v.bblit(x, y, 120, 7, 4, 4);
+          } else if (!nw) { // It's not possible for more than one corner to be missing.
+            this.v.bblit(x, y, 108, 11, 4, 4);
+          } else if (!ne) {
+            this.v.bblit(x, y, 104, 11, 4, 4);
+          } else if (!sw) {
+            this.v.bblit(x, y, 108, 7, 4, 4);
+          } else {
+            this.v.bblit(x, y, 104, 7, 4, 4);
           }
+        } else if (n && w && e) { // 3 cardinals: flat edge.
+          this.v.bblit(x, y, 112, 7, 4, 4);
+        } else if (n && w && s) {
+          this.v.bblit(x, y, 116, 11, 4, 4);
+        } else if (n && e && s) {
+          this.v.bblit(x, y, 112, 11, 4, 4);
+        } else if (w && e && s) {
+          this.v.bblit(x, y, 116, 7, 4, 4);
+        } else if (n && w) { // 2 cardinals: corner.
+          this.v.bblit(x, y, 100, 11, 4, 4);
+        } else if (n && e) {
+          this.v.bblit(x, y, 96, 11, 4, 4);
+        } else if (w && s) {
+          this.v.bblit(x, y, 100, 7, 4, 4);
+        } else if (e && s) {
+          this.v.bblit(x, y, 96, 7, 4, 4);
+        } else { // Nothing else should be possible. But we do have a singleton tile just in case.
+          this.v.bblit(x, y, 124, 11, 4, 4);
         }
       }
     }
     
+    // Ladders.
     for (const ldr of this.ldrv) {
       const x = Math.round(ldr.x);
       let y = Math.round(ldr.y + ldr.h); // Bottom.
@@ -333,27 +341,12 @@ export class Ecom {
       }
     }
     
+    // Overlay checkered flag just below the win zone.
     let x = this.wz.x + 8;
     const y = this.wz.y + this.wz.h;
     let i = (this.wz.w - 16) / 8;
     for (; i-->0; x+=8) this.v.bblit(x, y, 72, 15, 8, 8);
     this.v.bblit(this.wz.x, y, 64, 15, 8, 8);
     this.v.bblit(this.wz.x + this.wz.w - 8, y, 80, 15, 8, 8);
-  }
-  
-  ckw(x, y) {
-    if (x < 0) return 1;
-    if (y < 0) return 1;
-    if (x >= SCREENW) return 1;
-    if (y >= SCREENH) return 1;
-    for (const wl of this.wv) {
-      if (!wl.c) continue; // Don't count moving platforms.
-      if (x < wl.x) continue;
-      if (y < wl.y) continue;
-      if (x >= wl.x + wl.w) continue;
-      if (y >= wl.y + wl.h) continue;
-      return 1;
-    }
-    return 0;
   }
 }
