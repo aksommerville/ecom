@@ -28,8 +28,7 @@ export class Dot {
   
   die() {
     if (this.e.wt) return;
-    console.log(`TODO Dot.die()`);
-    this.a.playSong(0);
+    this.a.playSong("tts");
     this.ded = 0.001;
   }
   
@@ -64,6 +63,11 @@ export class Dot {
       if ((this.ac -= s) <= 0) { // Animate walking.
         this.ac += 0.125;
         if (++this.af >= 4) this.af = 0;
+      }
+    } else if (this.e.wt) {
+      if ((this.ac -= s) <= 0) {
+        this.ac += 0.200;
+        if (++this.af >= 2) this.af = 0;
       }
     } else if (!this.clm || this.flr) {
       this.af = 0;
@@ -120,11 +124,13 @@ export class Dot {
       dc++;
     }
     // Check all walls:
+    const pltv = [];
     for (const wl of this.e.wv) {
       const le = wl.x + wl.w - this.x; if (le <= 0) continue;
       const ue = wl.y + wl.h - this.y; if (ue <= 0) continue;
       const re = this.x + 16 - wl.x; if (re <= 0) continue;
       const de = this.y + 24 - wl.y; if (de < 0) continue; // Important: Down edge is < not <=
+      if (wl.dx || wl.dy) pltv.push(wl);
       if ((le <= re) && (le <= ue) && (le <= de)) {
         this.x = wl.x + wl.w;
         lc++;
@@ -154,9 +160,15 @@ export class Dot {
         dc++;
       }
     }
-    // If we collided from opposite edges, die.
+    // If we collided from opposite edges, it must be that a platform is bumping us.
+    // Reverse direction of all platforms involved in our collision, and push them back a little.
     if ((lc && rc) || (uc && dc)) {
-      this.die();
+      for (const plt of pltv) {
+        plt.dx *= -1;
+        plt.dy *= -1;
+        plt.x += plt.dx * 0.020;
+        plt.y += plt.dy * 0.020;
+      }
     }
     // Reset gravity etc when floor changes:
     if (nflr !== this.flr) {
@@ -197,7 +209,13 @@ export class Dot {
     const dy = Math.round(this.y);
     let srcx = 0;
     let srcy = 7;
-    if (this.clm && !this.flr && (this.y + 24 > this.clm.y)) {
+    
+    if (this.e.wt) {
+      srcy += 24;
+      if (this.af) srcx += 16;
+      if (this.flp) this.v.flop(dx, dy, srcx, srcy, 16, 24);
+      else this.v.blit(dx, dy, srcx, srcy, 16, 24);
+    } else if (this.clm && !this.flr && (this.y + 24 > this.clm.y)) {
       srcx = 48;
       srcy = 7;
       if (this.af) this.v.blit(dx, dy, srcx, srcy, 16, 24);

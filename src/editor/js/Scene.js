@@ -9,8 +9,9 @@ export class Scene {
     dst += `bg ${this.bg}\n`;
     dst += `hero ${this.hero.x} ${this.hero.y}\n`;
     dst += `win ${this.win.x} ${this.win.y} ${this.win.w} ${this.win.h}\n`;
-    for (const {x,y,w,h} of this.walls) dst += `wall ${x} ${y} ${w} ${h}\n`;
+    // Encode platforms before walls: When Dot rectifies collisions, the later things in the list get respected more closely.
     for (const {x,y,w,dx,dy} of this.platforms) dst += `platform ${x} ${y} ${w} ${dx} ${dy}\n`;
+    for (const {x,y,w,h} of this.walls) dst += `wall ${x} ${y} ${w} ${h}\n`;
     for (const {x,y,h} of this.ladders) dst += `ladder ${x} ${y} ${h}\n`;
     return dst;
   }

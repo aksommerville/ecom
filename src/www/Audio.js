@@ -100,9 +100,14 @@ export class Audio {
       const limit = this.ctx.currentTime + 3.000; // Read ahead by so much, into the song.
       while (this.songTime < limit) {
         if (this.songp >= this.song.length) {
-          this.songp = 1;
-          this.songTime += 0.010; // Advance a little bit on looping, otherwise a faulty song could kill us.
-          continue;
+          if (this.srpt) {
+            this.songp = 1;
+            this.songTime += 0.010; // Advance a little bit on looping, otherwise a faulty song could kill us.
+            continue;
+          } else {
+            this.song = null;
+            return;
+          }
         }
         const opcode = this.song[this.songp++];
         if (opcode === 0x27) { // Delay.
@@ -183,18 +188,18 @@ export class Audio {
     }, (tr - this.ctx.currentTime) * 1000);
   }
   
-  playSong(name) {
-    //return;//XXX music disabled
+  playSong(name, once) {
     if (!name) {
       this.ps();
     } else if (this.songs[name]) {
-      this.ps(this.songs[name]);
+      this.ps(this.songs[name], once);
     } else {
       this.pendingSongName = name;
+      this.pendingSongOnce = once;
     }
   }
   
-  ps(src) {
+  ps(src, once) {
     for (const v of this.vv) {
       if (!v.env.gain.value) {
         v.env.disconnect();
@@ -210,6 +215,7 @@ export class Audio {
       this.songp = 1;
       this.songTempo = src[0] - 0x3e;
       this.songTime = this.ctx.currentTime;
+      this.srpt = !once;
     } else {
       this.song = "";
       this.songp = 0;

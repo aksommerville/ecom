@@ -24,7 +24,7 @@ export class Ecom {
     this.ldrv = []; // {x,y,h}, ladders. Width always 16.
     this.tkv = []; // {x,y,y0,dx,n,t}, tickets, the little "1", "2", "3" for each keystroke.
     this.wz = { x:0, y:0, w:0, h:0 }; // Win zone.
-    this.wt = 0; // Win time. Counts down after winning until next reset.
+    this.wt = 0; // Win time. Counts up after winning.
   }
   
   reset(st) {
@@ -108,8 +108,8 @@ export class Ecom {
   
   win() {
     console.log(`TODO Ecom.win`);
-    this.a.playSong(0);
-    this.wt = 2;
+    this.a.playSong("taf", 1);
+    this.wt = 0.01;
   }
   
   stk() {
@@ -130,17 +130,9 @@ export class Ecom {
   update(s, state) {
   
     if (this.wt > 0) {
-      if ((this.wt -= s) <= 0) {
-        this.wt = 0;
-        const st = this.g.nextStage();
-        if (st) {
-          this.reset(st);
-        } else {
-          console.log(`Game over you win!`);
-          this.reset(this.g.nextStage());
-        }
-      }
-      this.bdx = this.bdy = 0;
+      this.wt += s;
+      this.bdx = 0;
+      this.bdy = 0;
     }
   
     /* Digest input state, track keystrokes.
@@ -166,7 +158,16 @@ export class Ecom {
       if (state & BTN_A) {
         if (!this.bj) {
           this.bj = 1;
-          if (this.dot.ded > 0.5) {
+          if (this.wt) {
+            this.wt = 0;
+            const st = this.g.nextStage();
+            if (st) {
+              this.reset(st);
+            } else {
+              console.log(`Game over, victory!`);
+              this.reset(this.g.nextStage());
+            }
+          } else if (this.dot.ded > 0.5) {
             this.reset(this.st);
           } else if (this.dot.ded > 0.0) {
             // Hold

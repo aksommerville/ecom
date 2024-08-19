@@ -9,16 +9,14 @@ Everything is copied; no need to clone that repo to build this one.
 
 ## TODO
 
-- [x] Graphics
-- [x] Render bg, ladders, and motionless walls to an offscreen canvas just once per level.
 - [ ] Sound effects
-- [x] totd plays at like half tempo after compilation. Runs fine in the dev server.
-- [ ] Music
+- [ ] Music -- Just refine the instruments and I think we're done.
 - [ ] Hello splash
-- [ ] Farewell splash
+- [ ] Victory splash
+- [ ] Some display during death and win time.
+- [ ] Show step count always?
 - [ ] Audio: Occassionally a too-loud note as it cancels. Hard to repro.
-- [ ] Don't die when squashed, find another way to handle it. Possible to just kiss your toe against a platform and die because of it.
-- [x] Level editor
+- [x] Don't die when squashed, find another way to handle it. Possible to just kiss your toe against a platform and die because of it.
 - [ ] Levels
 - [ ] Experiment with PNG formats, maybe we can reduce size by using index instead of RGBA.
 - [ ] Minicomic.
