@@ -1,4 +1,5 @@
 import { SCREENW, SCREENH } from "./constants.js";
+import { SND_JUMP, SND_DIE } from "./Audio.js";
 
 export class Dot {
   constructor(e, v, a) {
@@ -28,19 +29,18 @@ export class Dot {
   
   die() {
     if (this.e.wt) return;
+    this.a.snd(SND_DIE);
     this.a.playSong("tts");
     this.ded = 0.001;
   }
   
   jon() {
     if (this.clm || this.flr) {
-      // TODO Jump sound effect
+      this.a.snd(SND_JUMP);
       this.clm = 0;
       this.flr = 0;
       this.j = 1;
       this.jt = 0.375;
-    } else {
-      // TODO Reject-jump sound effect
     }
   }
   
@@ -59,11 +59,11 @@ export class Dot {
     if (this.e.bdx) {
       this.x += this.e.bdx * s * 120; // px/s
       this.flp = this.e.bdx < 0;
-      this.clm = 0;
       if ((this.ac -= s) <= 0) { // Animate walking.
-        this.ac += 0.125;
+        this.ac += this.clm ? 0.200 : 0.125;
         if (++this.af >= 4) this.af = 0;
       }
+      this.clm = 0;
     } else if (this.e.wt) {
       if ((this.ac -= s) <= 0) {
         this.ac += 0.200;
@@ -80,7 +80,7 @@ export class Dot {
         if (this.y < this.clm.y - 24) this.y = this.clm.y - 24;
         this.x = this.clm.x; // Ladders and Dot both always 16 width.
         this.flr = 0;
-        if ((this.ac -= s) <= 0) {
+        if (!this.e.bdx) if ((this.ac -= s) <= 0) {
           this.ac += 0.200;
           if (++this.af >= 2) this.af = 0;
         }
@@ -218,7 +218,7 @@ export class Dot {
     } else if (this.clm && !this.flr && (this.y + 24 > this.clm.y)) {
       srcx = 48;
       srcy = 7;
-      if (this.af) this.v.blit(dx, dy, srcx, srcy, 16, 24);
+      if (this.af & 1) this.v.blit(dx, dy, srcx, srcy, 16, 24);
       else this.v.flop(dx, dy, srcx, srcy, 16, 24);
     } else {
       if (!this.clm) switch (this.af) {

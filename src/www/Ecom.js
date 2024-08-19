@@ -156,7 +156,7 @@ export class Ecom {
           if (this.bdx = ndx) this.stk();
         }
         if (ndy !== this.bdy) {
-          if (this.bdy = ndy) this.stk();
+          if ((this.bdy = ndy) && this.dot.fldr()) this.stk();
         }
       }
       if (state & BTN_A) {

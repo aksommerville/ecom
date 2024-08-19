@@ -11,17 +11,13 @@ const insv = [ // [attackTime, peakLevel, decayTime, sustainLevel, releaseTime, 
 /* Your sound effects.
  * Export the index with a memorable name if it helps.
  * Each element in (sndv) is [MASTER, SHAPE, FREQ...]
- *
-export const SND_PEW = 0;
-export const SND_BLIP = 1;
-export const SND_NNRGH = 2;
+ */
+export const SND_JUMP = 0;
+export const SND_DIE = 1;
 const sndv = [
-  [0.700, "sine", 900, 100],
-  [0.800, [1,1,0,0.8,0,0.2], 500, 700, 500],
+  [0.700, "sine", 300, 1000],
   [0.200, "sawtooth", 100],
 ];
-/**/
-const sndv = [];
 
 export class Audio {
   constructor() {
