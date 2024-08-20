@@ -323,7 +323,11 @@ export class Ecom {
   }
   
   rbg() {
-    this.v.bc.fillStyle = "#8ac";
+    const gx = this.wz.x + (this.wz.w>>1), gy = this.wz.y + (this.wz.h>>1);
+    const grd = this.v.bc.createRadialGradient(gx, gy, 1, gx, gy, SCREENW);
+    grd.addColorStop(0, "#ace");
+    grd.addColorStop(1, "#46a");
+    this.v.bc.fillStyle = grd;
     this.v.bc.fillRect(0, 0, SCREENW, SCREENH);
     
     /* Walls.
