@@ -44,7 +44,7 @@ export class Ecom {
     this.ldrv = [];
     this.tkv = [];
     this.wz = { x:0, y:0, w:0, h:0 };
-    this.a.playSong("dd");
+    this.a.playSong("sm");
     const b65 = (s) => {
       s = s.charCodeAt(0);
       if ((s >= 0x41) && (s <= 0x5a)) return s - 0x41;

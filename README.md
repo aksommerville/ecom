@@ -15,8 +15,8 @@ Everything is copied; no need to clone that repo to build this one.
 - [x] Minicomic.
 - [x] Draw the background more efficiently, it's embarrassing.
 - [ ] Validate in major OS and browsers:
-- - [ ] MacOS Chrome
-- - [ ] MacOS Firefox
+- - [x] MacOS Chrome
+- - [x] MacOS Firefox
 - - [ ] Windows Chrome
 - - [ ] Windows Firefox
 
