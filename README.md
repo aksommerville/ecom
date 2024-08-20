@@ -9,14 +9,7 @@ Everything is copied; no need to clone that repo to build this one.
 
 ## TODO
 
-- [ ] Maybe not Dust Devil for the main theme. We need something that gets to the point within like 5 seconds. Levels are short.
-- [x] Victory splash
-- [x] Experiment with PNG formats, maybe we can reduce size by using index instead of RGBA. ...no need
-- [x] Minicomic.
-- [x] Draw the background more efficiently, it's embarrassing.
 - [ ] Validate in major OS and browsers:
-- - [x] MacOS Chrome
-- - [x] MacOS Firefox
 - - [ ] Windows Chrome
 - - [ ] Windows Firefox
 
