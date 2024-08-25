@@ -62,7 +62,13 @@ export class Input {
   }
   
   onKey(e) {
-    if (e.repeat) return;
+    if (e.repeat) {
+      if (KMap[e.code]) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      return;
+    }
     if (e.ctrlKey || e.altKey) return;
     e.stopPropagation();
     e.preventDefault();
