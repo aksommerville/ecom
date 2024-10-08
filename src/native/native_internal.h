@@ -81,6 +81,10 @@ void exec_send_key(const char *jsname,int value);
   Enter
   ...also Escape, but we'll handle that one separately.
 */
+void exec_remove_gamepad(int index);
+void exec_add_gamepad(int index,int axisc,int btnc);
+void exec_set_gamepad_axis(int index,int axisp,double v);
+void exec_set_gamepad_button(int index,int btnp,int v);
 
 // render.c
 int render_init();

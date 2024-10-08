@@ -107,7 +107,7 @@ export class Input {
       cka(0, BTN_LEFT, BTN_RIGHT);
       cka(1, BTN_UP, BTN_DOWN);
       const ckb = (ix, id) => {
-        if (src.buttons[ix].value) {
+        if (src.buttons[ix]?.value) {
           if (gamepad.buttons[ix]) return;
           gamepad.buttons[ix] = 1;
           this.setState(id, 1, gamepad);

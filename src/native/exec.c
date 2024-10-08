@@ -20,6 +20,7 @@ static struct {
   // A few stubby placeholder objects.
   JSValue bgctx;
   JSValue event;
+  JSValue gamepads;
   
 } exec={0};
 
@@ -269,9 +270,7 @@ static JSValue exec_jsfn_videoDecint(JSContext *ctx,JSValueConst thisValue,int a
  */
  
 static JSValue exec_jsfn_getGamepads(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  JSValue gamepads=JS_NewArray(ctx);
-  //TODO Populate gamepads
-  return gamepads;
+  return JS_DupValue(exec.ctx,exec.gamepads);
 }
 
 /* Dummy function.
@@ -293,6 +292,8 @@ static int exec_populate_globals() {
   exec.bgctx=JS_NewObject(exec.ctx);
   JS_SetPropertyStr(exec.ctx,exec.bgctx,"createRadialGradient",JS_NewCFunction(exec.ctx,exec_jsfn_createRadialGradient,"createRadialGradient",6));
   JS_SetPropertyStr(exec.ctx,exec.bgctx,"fillRect",JS_NewCFunction(exec.ctx,exec_jsfn_fillRect,"fillRect",4));
+  
+  exec.gamepads=JS_NewArray(exec.ctx);
 
   JSValue globals=JS_GetGlobalObject(exec.ctx);
   JSValue window=JS_NewObject(exec.ctx); // We'll also install it as "document", "navigator", and "console"
@@ -383,4 +384,44 @@ void exec_send_key(const char *jsname,int value) {
     JSValue result=JS_Call(exec.ctx,defer->fn,JS_NULL,1,&exec.event);
     exec_check_exception(result,1);
   }
+}
+
+/* Set gamepad states.
+ */
+ 
+void exec_remove_gamepad(int index) {
+  JS_SetPropertyUint32(exec.ctx,exec.gamepads,index,JS_NULL);
+}
+ 
+void exec_add_gamepad(int index,int axisc,int btnc) {
+  int i;
+  JSValue gamepad=JS_NewObject(exec.ctx);
+  JS_SetPropertyStr(exec.ctx,gamepad,"index",JS_NewInt32(exec.ctx,index));
+  JSValue axes=JS_NewArray(exec.ctx);
+  for (i=0;i<axisc;i++) JS_SetPropertyUint32(exec.ctx,axes,i,JS_NewFloat64(exec.ctx,0.0));
+  JS_SetPropertyStr(exec.ctx,gamepad,"axes",axes);
+  JSValue buttons=JS_NewArray(exec.ctx);
+  for (i=0;i<btnc;i++) JS_SetPropertyUint32(exec.ctx,buttons,i,JS_NewObject(exec.ctx)); // It's ok to be missing (value); our game only checks it booleanly.
+  JS_SetPropertyStr(exec.ctx,gamepad,"buttons",buttons);
+  JS_SetPropertyUint32(exec.ctx,exec.gamepads,index,gamepad);
+}
+
+void exec_set_gamepad_axis(int index,int axisp,double v) {
+  JSValue gamepad=JS_GetPropertyUint32(exec.ctx,exec.gamepads,index);
+  if (!JS_IsObject(gamepad)) return;
+  JSValue axes=JS_GetPropertyStr(exec.ctx,gamepad,"axes");
+  JS_SetPropertyUint32(exec.ctx,axes,axisp,JS_NewFloat64(exec.ctx,v));
+  JS_FreeValue(exec.ctx,axes);
+  JS_FreeValue(exec.ctx,gamepad);
+}
+
+void exec_set_gamepad_button(int index,int btnp,int v) {
+  JSValue gamepad=JS_GetPropertyUint32(exec.ctx,exec.gamepads,index);
+  if (!JS_IsObject(gamepad)) return;
+  JSValue buttons=JS_GetPropertyStr(exec.ctx,gamepad,"buttons");
+  JSValue vobj=JS_NewObject(exec.ctx); // so ridiculous, why is each button an object?
+  JS_SetPropertyStr(exec.ctx,vobj,"value",JS_NewInt32(exec.ctx,v));
+  JS_SetPropertyUint32(exec.ctx,buttons,btnp,vobj);
+  JS_FreeValue(exec.ctx,buttons);
+  JS_FreeValue(exec.ctx,gamepad);
 }
