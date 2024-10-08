@@ -226,7 +226,7 @@ export class Audio {
   }
   
   ldc() {
-    for (const e of document.querySelectorAll("song")) {
+    for (const e of document.getElementsByTagName("song")) {
       const src = new TextEncoder("utf8").encode(e.innerText.replace(/\s+/g, ""));
       const name = e.getAttribute("name");
       this.songs[name] = src;
@@ -238,7 +238,7 @@ export class Audio {
   
   /*IGNORE{*/
   loadUncompiledSongs() {
-    return Promise.all(Array.from(document.querySelectorAll("song")).map(e => {
+    return Promise.all(Array.from(document.getElementsByTagName("song")).map(e => {
       const url = e.getAttribute("href");
       const name = url.match(/^.*\/([^/.]*)\..*$/)[1];
       return fetch(url).then(rsp => {

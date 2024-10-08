@@ -408,5 +408,6 @@ export class Ecom {
     for (; i-->0; x+=8) this.v.bblit(x, y, 72, 15, 8, 8);
     this.v.bblit(this.wz.x, y, 64, 15, 8, 8);
     this.v.bblit(this.wz.x + this.wz.w - 8, y, 80, 15, 8, 8);
+    
   }
 }

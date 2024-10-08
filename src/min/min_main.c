@@ -8,8 +8,9 @@ struct min min={0};
 
 static void print_usage() {
   fprintf(stderr,
-    "Usage: %s -oOUTPUT INPUT\n"
+    "Usage: %s -oOUTPUT INPUT [--native]\n"
     "OUTPUT and INPUT are both HTML files.\n"
+    "With --native, INPUT is the packed HTML file and OUTPUT is a binary archive for embedding in the native app.\n"
     ,min.exename
   );
 }
@@ -34,6 +35,8 @@ int main(int argc,char **argv) {
         return 1;
       }
       min.dstpath=arg+2;
+    } else if (!strcmp(arg,"--native")) {
+      min.native=1;
     } else if (arg[0]=='-') {
       fprintf(stderr,"%s: Unexpected argument '%s'\n",min.exename,arg);
       return 1;
@@ -54,9 +57,9 @@ int main(int argc,char **argv) {
     return 1;
   }
 
-  int err=minify();
+  int err=min.native?compile_archive():minify();
   if (err<0) {
-    if (err!=-2) fprintf(stderr,"%s: Unspecified error during minification.\n",min.srcpath);
+    if (err!=-2) fprintf(stderr,"%s: Unspecified error during %s.\n",min.srcpath,min.native?"recompilation":"minification");
     return 1;
   }
 

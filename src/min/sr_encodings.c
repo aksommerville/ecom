@@ -652,7 +652,7 @@ static void SHA1Final(
 
     unsigned char finalcount[8];
 
-    unsigned char c;
+    unsigned char c[65];
 
 #if 0    /* untested "improvement" by DHR */
     /* Convert context->count to a sequence of bytes
@@ -676,12 +676,12 @@ static void SHA1Final(
         finalcount[i] = (unsigned char) ((context->count[(i >= 4 ? 0 : 1)] >> ((3 - (i & 3)) * 8)) & 255);      /* Endian independent */
     }
 #endif
-    c = 0200;
-    SHA1Update(context, &c, 1);
+    c[0] = 0200;
+    SHA1Update(context, c, 1);
     while ((context->count[0] & 504) != 448)
     {
-        c = 0000;
-        SHA1Update(context, &c, 1);
+        c[0] = 0000;
+        SHA1Update(context, c, 1);
     }
     SHA1Update(context, finalcount, 8); /* Should cause a SHA1Transform() */
     for (i = 0; i < 20; i++)

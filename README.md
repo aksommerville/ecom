@@ -7,24 +7,27 @@ I'm using a framework I wrote a few months ago,
 the original with more documentation is at https://github.com/aksommerville/weebpoc .
 Everything is copied; no need to clone that repo to build this one.
 
-## TODO
-
-- [ ] Validate in major OS and browsers:
-- - [ ] Windows Chrome
-- - [ ] Windows Firefox
-
-## Agenda
-
-- [x] 2024-08-23 Finalish graphics and level editor ready.
-- [x] 2024-08-25 Have playable by EOD, upload to Itch, invite friends to test.
-- [ ] 2024-08-30..2024-09-01 Matsuricon; don't expect to get a single thing done this weekend.
-- [ ] 2024-09-08 Plan to be completely done by EOD.
-- [ ] 2024-09-12 Final submission.
-- [ ] 2024-09-13T07-ish Submissions close. (1300 CEST)
-
 ## High Scores
 
 - 2024-08-19 87,74: 241
 - 2024-08-19 143,178: 40
 - 2024-08-20: 243
 - 2024-08-20: 83,75: 244
+
+## Further work: Build natively
+
+It's ok to have a ridiculously fat platform layer, if it means no changes to the core.
+So I want to build something that can take the existing index.html and work from there.
+
+Audio is going to be the tricky bit.
+I think the right approach is to strip Audio.js from the output completely, and implement a different synthesizer on the native end.
+So during conversion of the Javascript, remove Audio.js, then have the native side provide a global class Audio.
+
+- [x] How to define QuickJS globals? I need 'window' at least.
+- - `JS_GetGlobalObject()`, `JS_SetPropertyStr()`, nothing to it.
+
+Looking good so far. Got it bundling, executing, and receiving input.
+We do indeed have a ridiculously fat platform layer: 4.4 MB for the final executable, of which 19 kB is the actual game. :P
+
+- [ ] Video
+- [ ] Audio

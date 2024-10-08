@@ -13,6 +13,7 @@ extern struct min {
   const char *exename;
   const char *dstpath;
   const char *srcpath;
+  int native;
   char *src; // Input HTML file.
   int srcc;
   struct sr_encoder dst; // Output HTML file.
@@ -34,6 +35,10 @@ extern struct min {
 /* Using global (min), populate (dst) by reading (src) and pulling in other files as needed.
  */
 int minify();
+
+/* Same shape as minify() but produce the native archive from single-file HTML.
+ */
+int compile_archive();
 
 /* Consume some amount of input and minify into (min.dst).
  * If (require_closing_tag), we assert and consume a </style> or </script>.
