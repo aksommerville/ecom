@@ -29,5 +29,7 @@ So during conversion of the Javascript, remove Audio.js, then have the native si
 Looking good so far. Got it bundling, executing, and receiving input.
 We do indeed have a ridiculously fat platform layer: 4.4 MB for the final executable, of which 19 kB is the actual game. :P
 
-- [ ] Video
+- [x] Video
+- [ ] Joystick
 - [ ] Audio
+- [ ] GLES2, remove GL1 (update both render and xegl)

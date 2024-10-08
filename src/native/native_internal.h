@@ -8,9 +8,32 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define SCREENW 256
+#define SCREENH 144
+
+#define IMAGE_SIZE_LIMIT 1024
+
 extern struct globals {
   int terminate;
+  double next_time;
+  double start_real;
+  double start_cpu;
+  int framec;
 } g;
+
+struct image {
+  void *v;
+  int w,h,stride;
+  int pixelsize;
+};
+
+// image.c
+void image_del(struct image *image);
+struct image *image_new_alloc(int pixelsize,int w,int h);
+int image_force_rgba(struct image *image);
+
+// png.c
+struct image *png_decode(const void *src,int srcc);
 
 // rom.c
 int rom_init();
@@ -23,6 +46,7 @@ int rom_get_script(void *dstpp);
 void drivers_quit();
 int drivers_init();
 int drivers_update();
+struct hostio_video *drivers_get_video();
 
 // event.c, connected via drivers.c
 void cb_connect(struct hostio_input *driver,int devid);
@@ -57,5 +81,22 @@ void exec_send_key(const char *jsname,int value);
   Enter
   ...also Escape, but we'll handle that one separately.
 */
+
+// render.c
+int render_init();
+int render_begin();
+int render_end();
+void render_reset_gradient(int x,int y);
+void render_set_gradient(int p,int rgb);
+void render_fill_bg();
+void render_copy_bg();
+void render_fill_rect(int x,int y,int w,int h,int rgb);
+void render_blit(int dsttexid,int dstx,int dsty,int srcx,int srcy,int w,int h,int flop);
+void render_decint(int x,int y,int v,int digitc);
+
+// clock.c
+void clock_init();
+void clock_update(); // may block
+void clock_report();
 
 #endif

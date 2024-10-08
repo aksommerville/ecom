@@ -32,25 +32,37 @@ int main(int argc,char **argv) {
     if (err!=-2) fprintf(stderr,"%s: Unspecified error initializing drivers.\n",argv[0]);
     return 1;
   }
+  if ((err=render_init())<0) {
+    if (err!=-2) fprintf(stderr,"%s: Unspecified error initializing renderer.\n",argv[0]);
+    return 1;
+  }
   if ((err=exec_init())<0) {
     if (err!=-2) fprintf(stderr,"%s: Unspecified error standing Javascript runtime.\n",argv[0]);
     return 1;
   }
+  clock_init();
   
   while (!sigc&&!g.terminate) {
     if ((err=drivers_update())<0) {
       if (err!=-2) fprintf(stderr,"%s: Unspecified error updating drivers.\n",argv[0]);
       return 1;
     }
-    usleep(500000);//TODO sane clock
+    clock_update();
+    if ((err=render_begin())<0) {
+      if (err!=-2) fprintf(stderr,"%s: Unspecified error acquiring graphics context.\n",argv[0]);
+      return 1;
+    }
     if ((err=exec_update())<0) {
       if (err!=-2) fprintf(stderr,"%s: Unspecified error updating JS runtime.\n",argv[0]);
       return 1;
     }
-    //TODO Commit video frame.
+    if ((err=render_end())<0) {
+      if (err!=-2) fprintf(stderr,"%s: Unspecified error committing video.\n",argv[0]);
+      return 1;
+    }
   }
   
-  //TODO Report performance.
+  clock_report();
   drivers_quit();
   return 0;
 }

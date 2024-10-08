@@ -61,8 +61,8 @@ int drivers_init() {
       .w=0,
       .h=0,
       .fullscreen=0,
-      .fbw=0,//TODO
-      .fbh=0,
+      .fbw=SCREENW,
+      .fbh=SCREENH,
       .device=0,
     };
     if (hostio_init_video(drivers.hostio,0,&setup)<0) return -1;
@@ -98,4 +98,11 @@ int drivers_init() {
 int drivers_update() {
   if (hostio_update(drivers.hostio)<0) return -1;
   return 0;
+}
+
+/* Accessors.
+ */
+ 
+struct hostio_video *drivers_get_video() {
+  return drivers.hostio->video;
 }

@@ -161,21 +161,48 @@ static JSValue exec_jsfn_playSound(JSContext *ctx,JSValueConst thisValue,int arg
 }
 
 /* createRadialGradient and fillRect -- called when Ecom draws the background.
+ * These *only* apply to the background image.
  */
  
+static inline int hdeval(char src) {
+  if ((src>='0')&&(src<='9')) return src-'0';
+  if ((src>='a')&&(src<='f')) return src-'a'+10;
+  if ((src>='A')&&(src<='F')) return src-'A'+10;
+  return 0;
+}
+ 
 static JSValue exec_jsfn_addColorStop(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  fprintf(stderr,"%s:%d:%s:TODO argc=%d\n",__FILE__,__LINE__,__func__,argc);
+  if (argc!=2) return JS_NULL;
+  int32_t p=0,rgb=0;
+  JS_ToInt32(ctx,&p,argv[0]);
+  const char *color=JS_ToCString(ctx,argv[1]);
+  if (!color) return JS_NULL;
+  int colorc=0; while (color[colorc]) colorc++;
+  if (colorc==4) {
+    int r=hdeval(color[1]);
+    int g=hdeval(color[2]);
+    int b=hdeval(color[3]);
+    rgb=(r<<20)|(r<<16)|(g<<12)|(g<<8)|(b<<4)|b;
+  }
+  JS_FreeCString(ctx,color);
+  render_set_gradient(p,rgb);
   return JS_NULL;
 }
  
 static JSValue exec_jsfn_createRadialGradient(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
+  if (argc<2) return JS_NULL; // There's 6 arguments, but we only use the first two (x,y)
+  int32_t x=0,y=0;
+  JS_ToInt32(ctx,&x,argv[0]);
+  JS_ToInt32(ctx,&y,argv[1]);
+  render_reset_gradient(x,y);
   JSValue gradient=JS_NewObject(ctx);
   JS_SetPropertyStr(ctx,gradient,"addColorStop",JS_NewCFunction(ctx,exec_jsfn_addColorStop,"addColorStop",2));
   return gradient;
 }
  
 static JSValue exec_jsfn_fillRect(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  fprintf(stderr,"%s:%d:%s:TODO argc=%d\n",__FILE__,__LINE__,__func__,argc);
+  // We get four arguments (x,y,w,h), but they are always the entire background.
+  render_fill_bg();
   return JS_NULL;
 }
 
@@ -183,27 +210,58 @@ static JSValue exec_jsfn_fillRect(JSContext *ctx,JSValueConst thisValue,int argc
  */
  
 static JSValue exec_jsfn_videoEnd(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  fprintf(stderr,"%s:%d:%s:TODO argc=%d\n",__FILE__,__LINE__,__func__,argc);
   return JS_NULL;
 }
  
 static JSValue exec_jsfn_videoBg(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  fprintf(stderr,"%s:%d:%s:TODO argc=%d\n",__FILE__,__LINE__,__func__,argc);
+  render_copy_bg();
   return JS_NULL;
 }
  
 static JSValue exec_jsfn_videoRect(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  fprintf(stderr,"%s:%d:%s:TODO argc=%d\n",__FILE__,__LINE__,__func__,argc);
+  if (argc!=5) return JS_NULL;
+  int32_t x=0,y=0,w=0,h=0,rgb=0;
+  JS_ToInt32(ctx,&x,argv[0]);
+  JS_ToInt32(ctx,&y,argv[1]);
+  JS_ToInt32(ctx,&w,argv[2]);
+  JS_ToInt32(ctx,&h,argv[3]);
+  const char *color=JS_ToCString(ctx,argv[4]);
+  if (!color) return JS_NULL;
+  int colorc=0; while (color[colorc]) colorc++;
+  if (colorc==4) {
+    int r=hdeval(color[1]);
+    int g=hdeval(color[2]);
+    int b=hdeval(color[3]);
+    rgb=(r<<20)|(r<<16)|(g<<12)|(g<<8)|(b<<4)|b;
+  }
+  JS_FreeCString(ctx,color);
+  render_fill_rect(x,y,w,h,rgb);
   return JS_NULL;
 }
  
 static JSValue exec_jsfn_videoBlit(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  //fprintf(stderr,"%s:%d:%s:TODO argc=%d\n",__FILE__,__LINE__,__func__,argc); // Gets called hundreds of times during init, composing the background image
+  if (argc!=8) return JS_NULL;
+  int32_t dsttexid=0,dstx=0,dsty=0,srcx=0,srcy=0,w=0,h=0,flop=0;
+  JS_ToInt32(ctx,&dsttexid,argv[0]);
+  JS_ToInt32(ctx,&dstx,argv[1]);
+  JS_ToInt32(ctx,&dsty,argv[2]);
+  JS_ToInt32(ctx,&srcx,argv[3]);
+  JS_ToInt32(ctx,&srcy,argv[4]);
+  JS_ToInt32(ctx,&w,argv[5]);
+  JS_ToInt32(ctx,&h,argv[6]);
+  JS_ToInt32(ctx,&flop,argv[7]);
+  render_blit(dsttexid,dstx,dsty,srcx,srcy,w,h,flop);
   return JS_NULL;
 }
  
 static JSValue exec_jsfn_videoDecint(JSContext *ctx,JSValueConst thisValue,int argc,JSValueConst *argv) {
-  fprintf(stderr,"%s:%d:%s:TODO argc=%d\n",__FILE__,__LINE__,__func__,argc);
+  if (argc!=4) return JS_NULL;
+  int32_t x=0,y=0,v=0,digitc=0;
+  JS_ToInt32(ctx,&x,argv[0]);
+  JS_ToInt32(ctx,&y,argv[1]);
+  JS_ToInt32(ctx,&v,argv[2]);
+  JS_ToInt32(ctx,&digitc,argv[3]);
+  render_decint(x,y,v,digitc);
   return JS_NULL;
 }
 
