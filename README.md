@@ -32,5 +32,7 @@ We do indeed have a ridiculously fat platform layer: 4.4 MB for the final execut
 - [x] Video
 - [x] Joystick
 - [ ] Audio
+- - [ ] Different voices for song.
+- - [ ] Pitch bend for sound effects.
 - [ ] GLES2, remove GL1 (update both render and xegl)
 - [ ] Is it possible to make a leaner build of QuickJS?

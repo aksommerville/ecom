@@ -19,7 +19,6 @@ static struct {
 } render={0};
 
 int render_init() {
-  fprintf(stderr,"%s...\n",__func__);
   int err;
   const void *png=0;
   int pngc=rom_get_image(&png);

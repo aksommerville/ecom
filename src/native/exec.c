@@ -148,7 +148,16 @@ static JSValue exec_jsfn_playSong(JSContext *ctx,JSValueConst thisValue,int argc
   if (argc<1) return JS_NULL;
   const char *name=JS_ToCString(ctx,argv[0]);
   if (!name) return JS_NULL;
-  fprintf(stderr,"%s:%d: TODO playSong '%s'\n",__FILE__,__LINE__,name);
+  int32_t once=0;
+  if (argc>=2) JS_ToInt32(ctx,&once,argv[1]);
+  const void *serial=0;
+  int serialc=rom_get_song(&serial,name,-1);
+  if (serialc>0) {
+    if (hostio_audio_lock(drivers_get_hostio())>=0) {
+      synth_play_song(serial,serialc,once);
+      hostio_audio_unlock(drivers_get_hostio());
+    }
+  }
   JS_FreeCString(ctx,name);
   return JS_NULL;
 }
@@ -157,7 +166,10 @@ static JSValue exec_jsfn_playSound(JSContext *ctx,JSValueConst thisValue,int arg
   if (argc<1) return JS_NULL;
   int32_t id=0;
   JS_ToInt32(ctx,&id,argv[0]);
-  fprintf(stderr,"%s:%d: TODO playSound %d\n",__FILE__,__LINE__,id);
+  if (hostio_audio_lock(drivers_get_hostio())>=0) {
+    synth_play_sound(id);
+    hostio_audio_unlock(drivers_get_hostio());
+  }
   return JS_NULL;
 }
 

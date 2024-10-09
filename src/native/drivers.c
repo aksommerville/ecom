@@ -21,13 +21,6 @@ void drivers_quit() {
   memset(&drivers,0,sizeof(drivers));
 }
 
-/* Audio/synth glue.
- */
- 
-void cb_pcm_out(int16_t *v,int c,struct hostio_audio *driver) {
-  memset(v,0,c<<1);//TODO
-}
-
 /* Init.
  */
  
@@ -43,7 +36,7 @@ int drivers_init() {
     .cb_mwheel=cb_mwheel,
   };
   struct hostio_audio_delegate adel={
-    .cb_pcm_out=cb_pcm_out,
+    .cb_pcm_out=synth_update,
   };
   struct hostio_input_delegate idel={
     .cb_connect=cb_connect,
@@ -85,7 +78,7 @@ int drivers_init() {
     if (hostio_init_input(drivers.hostio,0,&setup)<0) return -1;
   }
   
-  //TODO synth
+  if (synth_init(drivers.hostio->audio->rate,drivers.hostio->audio->chanc)<0) return -1;
   
   hostio_log_driver_names(drivers.hostio);
   hostio_audio_play(drivers.hostio,1);
@@ -102,6 +95,10 @@ int drivers_update() {
 
 /* Accessors.
  */
+ 
+struct hostio *drivers_get_hostio() {
+  return drivers.hostio;
+}
  
 struct hostio_video *drivers_get_video() {
   return drivers.hostio->video;

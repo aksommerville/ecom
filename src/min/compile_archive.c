@@ -159,7 +159,7 @@ static int rewrite_js(const char *src,int srcc) {
     
     // Audio.js
     if ((clsnamec==5)&&!memcmp(clsname,"Audio",5)) {
-      if (sr_encode_raw(&min.dst,"class Audio { playSong(name) { playSong(name); } update() {} snd(id) { playSound(id) } }\n",-1)<0) return -1;
+      if (sr_encode_raw(&min.dst,"class Audio { playSong(name,once) { playSong(name,once); } update() {} snd(id) { playSound(id) } }\n",-1)<0) return -1;
       continue;
     }
     

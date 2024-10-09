@@ -46,6 +46,7 @@ int rom_get_script(void *dstpp);
 void drivers_quit();
 int drivers_init();
 int drivers_update();
+struct hostio *drivers_get_hostio();
 struct hostio_video *drivers_get_video();
 
 // event.c, connected via drivers.c
@@ -102,5 +103,11 @@ void render_decint(int x,int y,int v,int digitc);
 void clock_init();
 void clock_update(); // may block
 void clock_report();
+
+// synth.c
+int synth_init(int rate,int chanc);
+void synth_update(int16_t *v,int c,struct hostio_audio *driver);
+void synth_play_song(const void *serial,int serialc,int once);
+void synth_play_sound(int id);
 
 #endif
