@@ -1,4 +1,5 @@
 #include "native_internal.h"
+#include <math.h>
 
 /* From weebpoc/README.md, which i cleverly forgot to document in this repo:
 static const char *alpha_opcode = "'()*+,-./01234567"; // delay,ch0,...,ch15
@@ -23,13 +24,20 @@ NOTEID, add 0x23 for the MIDI note id. Range is B1..D7. (0x23 happens to be the 
  */
  
 #define VOICE_LIMIT 16
+#define WAVE_LENGTH_BITS 10
+#define WAVE_LENGTH_SAMPLES (1<<WAVE_LENGTH_BITS)
+#define WAVE_SHIFT (32-WAVE_LENGTH_BITS)
  
 static struct {
   int rate,chanc;
   struct voice {
+    int inuse;
     uint32_t p;
     uint32_t dp;
-    int16_t level;
+    uint32_t ddp;
+    float level;
+    float dlevel;
+    float targetlevel;
     int ttl;
   } voicev[VOICE_LIMIT];
   int voicec;
@@ -40,6 +48,7 @@ static struct {
   int songp;
   int songdelay; // frames
   int songrepeat;
+  float wave[WAVE_LENGTH_SAMPLES];
 } synth={0};
 
 /* Init.
@@ -63,6 +72,12 @@ int synth_init(int rate,int chanc) {
     synth.dp_by_noteid[noteid]=synth.dp_by_noteid[noteid+12]>>1;
   }
   
+  float *wavep=synth.wave;
+  float t=0.0f,dt=(M_PI*2.0f)/WAVE_LENGTH_SAMPLES;
+  for (i=WAVE_LENGTH_SAMPLES;i-->0;wavep++,t+=dt) {
+    *wavep=sinf(t);
+  }
+  
   return 0;
 }
 
@@ -75,6 +90,7 @@ static struct voice *synth_voice_new() {
   struct voice *oldest=voice;
   int i=VOICE_LIMIT;
   for (;i-->0;voice++) {
+    if (!voice->inuse) return voice;
     if (voice->ttl<oldest->ttl) oldest=voice;
   }
   return oldest;
@@ -83,26 +99,55 @@ static struct voice *synth_voice_new() {
 /* Play note.
  */
  
-static void synth_play_note(int chid,int noteid,int durms) {
-  if ((chid<0)||(chid>15)) return;
-  if ((noteid<0)||(noteid>63)) return;
+static struct voice *synth_play_note(int chid,int noteid,int durms) {
+  if ((chid<0)||(chid>15)) return 0;
+  if ((noteid<0)||(noteid>63)) return 0;
   struct voice *voice=synth_voice_new();
   voice->p=0;
   voice->dp=synth.dp_by_noteid[noteid];
-  voice->level=5000;
+  voice->ddp=0;
+  voice->level=0.0f;
+  voice->targetlevel=0.200f;
+  voice->dlevel=voice->targetlevel/(synth.rate*0.015f);
   voice->ttl=(durms*synth.rate)/1000;
+  voice->inuse=1;
+  return voice;
 }
 
 /* Update voice.
  */
  
 static void voice_update(int16_t *v,int c,struct voice *voice) {
-  if (voice->ttl<c) c=voice->ttl;
+  if (!voice->inuse) return;
   voice->ttl-=c;
   for (;c-->0;v++) {
-    if (voice->p&0x80000000) (*v)-=voice->level;
-    else (*v)+=voice->level;
+    
+    /* Sine wave from a table with envelope. */
+    float sample=synth.wave[voice->p>>WAVE_SHIFT];
+    if (voice->dlevel>0.0f) {
+      if ((voice->level+=voice->dlevel)>=voice->targetlevel) {
+        voice->level=voice->targetlevel;
+        voice->dlevel=0.0f;
+      }
+    } else if (voice->dlevel<0.0f) {
+      if ((voice->level+=voice->dlevel)<=0.0f) {
+        voice->level=0.0f;
+        voice->dlevel=0.0f;
+        voice->inuse=0;
+        break;
+      }
+    } else if (voice->ttl<=0) {
+      voice->dlevel=voice->level/(synth.rate*-0.200f);
+    }
+    sample*=voice->level;
+    int isample=(int)(sample*20000.0f);
+    if (isample>32767) isample=32767;
+    else if (isample<-32768) isample=-32768;
+    (*v)+=isample;
+    /**/
+    
     voice->p+=voice->dp;
+    voice->dp+=voice->ddp;
   }
 }
 
@@ -209,7 +254,7 @@ void synth_update(int16_t *v,int c,struct hostio_audio *driver) {
     case 2: synth_update_stereo(v,framec); break;
     default: synth_update_multi(v,framec); break;
   }
-  while (synth.voicec&&(synth.voicev[synth.voicec-1].ttl<=0)) synth.voicec--;
+  while (synth.voicec&&(!synth.voicev[synth.voicec-1].inuse)) synth.voicec--;
 }
 
 /* Play song.
@@ -231,10 +276,16 @@ void synth_play_song(const void *src,int srcc,int once) {
 void synth_play_sound(int id) {
   switch (id) {
     case 0: { // jump: [0.700, "sine", 300, 1000],
-        synth_play_note(0,30,400);
+        struct voice *voice=synth_play_note(0,30,300);
+        if (voice) {
+          uint32_t targetdp=synth.dp_by_noteid[50];
+          voice->ddp=(targetdp-voice->dp)/(synth.rate);
+        }
       } break;
     case 1: { // die: [0.200, "sawtooth", 100],
-        synth_play_note(0,20,400);
+        struct voice *voice=synth_play_note(0,20,400);
+        if (voice) {
+        }
       } break;
   }
 }
