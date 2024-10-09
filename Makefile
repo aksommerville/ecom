@@ -52,6 +52,7 @@ ifneq (,$(strip $(QJS_SDK)))
   EXE_NATIVE:=out/ecom
   $(EXE_NATIVE):$(OFILES_NATIVE);$(PRECMD) $(LD) -o$@ $(OFILES_NATIVE) $(LDPOST)
   all:$(EXE_NATIVE)
+  native-run:$(EXE_NATIVE);$(EXE_NATIVE)
 endif
 
 # 'make run' to serve the input files, prefer for high-frequency dev work.

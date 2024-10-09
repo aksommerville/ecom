@@ -13,6 +13,7 @@ Everything is copied; no need to clone that repo to build this one.
 - 2024-08-19 143,178: 40
 - 2024-08-20: 243
 - 2024-08-20: 83,75: 244
+- 2024-10-09: 82,74: 247
 
 ## Further work: Build natively
 
@@ -34,5 +35,5 @@ We do indeed have a ridiculously fat platform layer: 4.4 MB for the final execut
 - [x] Audio
 - - [x] Different voices for song.
 - - [x] Pitch bend for sound effects.
-- [ ] GLES2, remove GL1 (update both render and xegl)
+- [x] GLES2, remove GL1 (update both render and xegl)
 - [ ] Is it possible to make a leaner build of QuickJS?

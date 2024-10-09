@@ -162,8 +162,8 @@ static int xegl_init(struct xegl *xegl,const struct xegl_setup *setup) {
     EGL_ALPHA_SIZE,       0,
     EGL_DEPTH_SIZE,      EGL_DONT_CARE,
     EGL_STENCIL_SIZE,    EGL_DONT_CARE,
-    //EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+    //EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
     EGL_SURFACE_TYPE,    EGL_WINDOW_BIT|EGL_PIXMAP_BIT,
     EGL_NONE,
   };
@@ -171,8 +171,8 @@ static int xegl_init(struct xegl *xegl,const struct xegl_setup *setup) {
   int eglcfgc=0;
   if (!eglChooseConfig(xegl->egldisplay,eglattribv,&eglconfig,1,&eglcfgc)) return -1;
   if (eglcfgc<1) return -1;
-  //if (!eglBindAPI(EGL_OPENGL_ES_API)) return -1;
-  if (!eglBindAPI(EGL_OPENGL_API)) return -1;
+  if (!eglBindAPI(EGL_OPENGL_ES_API)) return -1;
+  //if (!eglBindAPI(EGL_OPENGL_API)) return -1;
   EGLint ctxattribv[]={
     EGL_CONTEXT_MAJOR_VERSION,2,
     EGL_CONTEXT_MINOR_VERSION,0,

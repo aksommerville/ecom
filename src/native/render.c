@@ -4,7 +4,34 @@
  */
 
 #include "native_internal.h"
-#include <GL/gl.h>//TODO Use GLES2 instead
+#include <GLES2/gl2.h>
+
+/* Shader.
+ */
+ 
+static const char vshader[]=
+  "#version 100\n"
+  "precision mediump float;\n"
+  "uniform vec2 screensize;\n"
+  "attribute vec2 apos;\n" // attr 0
+  "attribute vec2 atexcoord;\n" // attr 1
+  "varying vec2 vtexcoord;\n"
+  "void main() {\n"
+    "vec2 npos=(apos*2.0)/screensize-1.0;\n"
+    "gl_Position=vec4(npos,0.0,1.0);\n"
+    "vtexcoord=atexcoord;\n"
+  "}\n"
+"";
+
+static const char fshader[]=
+  "#version 100\n"
+  "precision mediump float;\n"
+  "uniform sampler2D sampler;\n"
+  "varying vec2 vtexcoord;\n"
+  "void main() {\n"
+    "gl_FragColor=texture2D(sampler,vtexcoord);\n"
+  "}\n"
+"";
 
 /* Private globals.
  */
@@ -16,7 +43,86 @@ static struct {
   int gradx,grady;
   int grad0,grad1; // 0x00rrggbb
   GLuint texid;
+  GLint program;
+  GLuint u_screensize;
+  GLuint u_sampler;
 } render={0};
+
+/* Compile half of one program.
+ * <0 for error.
+ */
+ 
+static int render_compile_shader(const char *src,int srcc,int type) {
+  GLint sid=glCreateShader(type);
+  if (!sid) return -1;
+  glShaderSource(sid,1,&src,&srcc);
+  glCompileShader(sid);
+  GLint status=0;
+  glGetShaderiv(sid,GL_COMPILE_STATUS,&status);
+  if (status) {
+    glAttachShader(render.program,sid);
+    glDeleteShader(sid);
+    return 0;
+  }
+  GLuint loga=0,logged=0;
+  glGetShaderiv(sid,GL_INFO_LOG_LENGTH,&loga);
+  if (loga>0) {
+    GLchar *log=malloc(loga+1);
+    if (log) {
+      GLsizei logc=0;
+      glGetShaderInfoLog(sid,loga,&logc,log);
+      if ((logc>0)&&(logc<=loga)) {
+        while (logc&&((unsigned char)log[logc-1]<=0x20)) logc--;
+        fprintf(stderr,"Failed to compile %s shader:\n%.*s\n",(type==GL_VERTEX_SHADER)?"vertex":"fragment",logc,log);
+        logged=1;
+      }
+      free(log);
+    }
+  }
+  if (!logged) fprintf(stderr,"Failed to compile %s shader, no further detail available.\n",(type==GL_VERTEX_SHADER)?"vertex":"fragment");
+  glDeleteShader(sid);
+  return -2;
+}
+
+/* Compile and link shader.
+ */
+ 
+static int render_compile_program() {
+  int err;
+  if (!(render.program=glCreateProgram())) return -1;
+  if ((err=render_compile_shader(vshader,sizeof(vshader)-1,GL_VERTEX_SHADER))<0) return err;
+  if ((err=render_compile_shader(fshader,sizeof(fshader)-1,GL_FRAGMENT_SHADER))<0) return err;
+  glBindAttribLocation(render.program,0,"apos");
+  glBindAttribLocation(render.program,1,"atexcoord");
+  glLinkProgram(render.program);
+  GLint status=0;
+  glGetProgramiv(render.program,GL_LINK_STATUS,&status);
+  if (status) {
+    render.u_screensize=glGetUniformLocation(render.program,"screensize");
+    render.u_sampler=glGetUniformLocation(render.program,"sampler");
+    return 0;
+  }
+  GLuint loga=0,logged=0;
+  glGetProgramiv(render.program,GL_INFO_LOG_LENGTH,&loga);
+  if (loga>0) {
+    GLchar *log=malloc(loga+1);
+    if (log) {
+      GLsizei logc=0;
+      glGetProgramInfoLog(render.program,loga,&logc,log);
+      if ((logc>0)&&(logc<=loga)) {
+        while (logc&&((unsigned char)log[logc-1]<=0x20)) logc--;
+        fprintf(stderr,"Failed to link GLSL program:\n%.*s\n",logc,log);
+        logged=1;
+      }
+      free(log);
+    }
+  }
+  if (!logged) fprintf(stderr,"Failed to link GLSL program, no further detail available.\n");
+  return -2;
+}
+ 
+/* Init.
+ */
 
 int render_init() {
   int err;
@@ -38,7 +144,7 @@ int render_init() {
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-  //TODO Compile shaders.
+  if ((err==render_compile_program())<0) return err;
   return 0;
 }
 
@@ -51,8 +157,8 @@ static void render_copy_to_main(struct hostio_video *video) {
   int scale=(scalex<scaley)?scalex:scaley;
   if (scale<1) scale=1;
   int dstw=SCREENW*scale,dsth=SCREENH*scale;
-  GLfloat fx=(GLfloat)dstw/(GLfloat)mainw;
-  GLfloat fy=(GLfloat)dsth/(GLfloat)mainh;
+  int dstx=(mainw>>1)-(dstw>>1);
+  int dsty=(mainh>>1)-(dsth>>1);
   glViewport(0,0,mainw,mainh);
   if ((dstw<mainw)||(dsth<mainh)) {
     glClearColor(0.0f,0.0f,0.0f,1.0f);
@@ -60,13 +166,22 @@ static void render_copy_to_main(struct hostio_video *video) {
   }
   glBindTexture(GL_TEXTURE_2D,render.texid);
   glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,SCREENW,SCREENH,0,GL_RGBA,GL_UNSIGNED_BYTE,render.fb->v);
-  glEnable(GL_TEXTURE_2D);
-  glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2i(0,0); glVertex2f(-fx, fy);
-    glTexCoord2i(0,1); glVertex2f(-fx,-fy);
-    glTexCoord2i(1,0); glVertex2f( fx, fy);
-    glTexCoord2i(1,1); glVertex2f( fx,-fy);
-  glEnd();
+  glUseProgram(render.program);
+  glUniform2f(render.u_screensize,(GLfloat)mainw,(GLfloat)mainh);
+  glUniform1i(render.u_sampler,0);
+  struct { GLfloat x,y,tx,ty; } vtxv[]={
+    { dstx     ,dsty     , 0.0f,1.0f },
+    { dstx     ,dsty+dsth, 0.0f,0.0f },
+    { dstx+dstw,dsty     , 1.0f,1.0f },
+    { dstx+dstw,dsty+dsth, 1.0f,0.0f },
+  };
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(0,2,GL_FLOAT,0,sizeof(vtxv[0]),&vtxv[0].x);
+  glVertexAttribPointer(1,2,GL_FLOAT,0,sizeof(vtxv[0]),&vtxv[0].tx);
+  glDrawArrays(GL_TRIANGLE_STRIP,0,sizeof(vtxv)/sizeof(vtxv[0]));
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
 }
 
 /* Frame fences.
@@ -185,7 +300,6 @@ void render_blit(int dsttexid,int dstx,int dsty,int srcx,int srcy,int w,int h,in
  */
  
 void render_decint(int x,int y,int v,int digitc) {
-  // this.blit(x, y, 88 + 3 * digit, 15, 3, 5);
   if (v<0) v=0; // There won't be any negatives.
   x+=4*digitc; // digitc only for right alignment -- don't print leading zeroes
   render_blit(0,x,y,88+3*(v%10),15,3,5,0); // LSD always
