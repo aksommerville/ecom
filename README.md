@@ -36,4 +36,6 @@ We do indeed have a ridiculously fat platform layer: 4.4 MB for the final execut
 - - [x] Different voices for song.
 - - [x] Pitch bend for sound effects.
 - [x] GLES2, remove GL1 (update both render and xegl)
-- [ ] Is it possible to make a leaner build of QuickJS?
+- [x] Is it possible to make a leaner build of QuickJS? ...a little
+- - Feature flags in quickjs/Makefile:
+- - CONFIG_BIGNUM=y : 8797424 => 7993744 for libquickjs.a ; 4459272 => 4075648 for ecom.
