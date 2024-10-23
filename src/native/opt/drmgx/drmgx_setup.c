@@ -47,6 +47,12 @@ static int drmgx_pick_mode(
   int bsmall=((bmode->hdisplay<reqw)||(bmode->vdisplay<reqh));
   if (asmall&&!bsmall) return 1;
   if (!asmall&&bsmall) return -1;
+
+		// XXX Quick hack to prevent 4k output with VCS and big TV. (we only need 256x144). Prefer 1280x720, since I know that's available.
+		int a1280=((amode->hdisplay==1280)&&(amode->vdisplay==720));
+		int b1280=((bmode->hdisplay==1280)&&(bmode->vdisplay==720));
+		if (a1280&&!b1280) return -1;
+		if (!a1280&&b1280) return 1;
   
   // If one has the PREFERRED flag, that means it's already active.
   // That's good, we want it.
@@ -124,7 +130,7 @@ static int drmgx_select_best_mode(drmModeResPtr res) {
   }
   if (!bestconn) return -1;
   
-  /**
+  /**/
   fprintf(stderr,
     "drm: Selected video mode '%.*s' (%dx%d@%dHz)\n",
     DRM_DISPLAY_MODE_LEN,bestmode.name,

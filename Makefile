@@ -12,7 +12,7 @@ endif
 NATIVE_OPT_ENABLE:=hostio xegl drmgx alsafd evdev
 CC:=gcc -c -MMD -O3 -Isrc -Isrc/native -Werror -Wimplicit -Wno-pointer-sign -Wno-parentheses $(foreach U,$(NATIVE_OPT_ENABLE),-DUSE_$U=1) -I/usr/include/libdrm -I$(QJS_SDK)
 LD:=gcc -z noexecstack
-LDPOST:=-lz -lGLESv2 -lGL -lEGL $(QJS_SDK)/libquickjs.a -lm \
+LDPOST:=-lz -lGLESv2 -lGL -lEGL $(QJS_SDK)/libquickjs.a -lm -lpthread \
   $(if $(filter xegl,$(NATIVE_OPT_ENABLE)),-lX11) \
   $(if $(filter drmgx,$(NATIVE_OPT_ENABLE)),-ldrm -lgbm) \
   $(if $(filter pulse,$(NATIVE_OPT_ENABLE)),-lpulse-simple) \

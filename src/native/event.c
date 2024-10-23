@@ -134,6 +134,13 @@ void cb_button(struct hostio_input *driver,int devid,int btnid,int value) {
     case 1: {
         int dstvalue=((value>=map->srclo)&&(value<=map->srchi))?1:0;
         if (dstvalue==map->dstvalue) return;
+        //if (dstvalue) fprintf(stderr,"%s %d.0x%08x=%d\n",__func__,devid,btnid,value);
+        if (dstvalue) switch (btnid) {
+          //XXX Ugly hack to get a Quit button on the VCS.
+          case 0x0001013c: {
+              g.terminate=1;
+            } return;
+        }
         map->dstvalue=dstvalue;
         exec_set_gamepad_button(devid,map->dstp,dstvalue);
       } break;
