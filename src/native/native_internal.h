@@ -19,6 +19,8 @@ extern struct globals {
   double start_real;
   double start_cpu;
   int framec;
+  int devid_keyboard;
+  int pvinput;
 } g;
 
 struct image {
@@ -61,6 +63,8 @@ void cb_text(struct hostio_video *driver,int codepoint);
 void cb_mmotion(struct hostio_video *driver,int x,int y);
 void cb_mbutton(struct hostio_video *driver,int btnid,int value);
 void cb_mwheel(struct hostio_video *driver,int dx,int dy);
+void cb_quit();
+void cb_fullscreen();
 
 // exec.c
 int exec_init();

@@ -40,6 +40,7 @@ int main(int argc,char **argv) {
     if (err!=-2) fprintf(stderr,"%s: Unspecified error standing Javascript runtime.\n",argv[0]);
     return 1;
   }
+  exec_add_gamepad(0,2,16); // devid zero is fine for the JS side (it's the gamepad index), and won't be used on ours. So there's always a fake gamepad we can assign to.
   clock_init();
   
   while (!sigc&&!g.terminate) {

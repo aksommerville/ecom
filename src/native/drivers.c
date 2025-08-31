@@ -5,6 +5,7 @@
  */
  
 #include "native_internal.h"
+#include "inmgr/inmgr.h"
 
 /* Globals.
  */
@@ -17,6 +18,7 @@ static struct {
  */
  
 void drivers_quit() {
+  inmgr_quit();
   hostio_del(drivers.hostio);
   memset(&drivers,0,sizeof(drivers));
 }
@@ -45,6 +47,11 @@ int drivers_init() {
   };
   if (!(drivers.hostio=hostio_new(&vdel,&adel,&idel))) return -1;
   
+  if (inmgr_init()<0) return -1;
+  inmgr_set_button_mask(INMGR_BTN_DPAD|INMGR_BTN_SOUTH|INMGR_BTN_AUX3);
+  inmgr_set_signal(INMGR_BTN_QUIT,cb_quit);
+  inmgr_set_signal(INMGR_BTN_FULLSCREEN,cb_fullscreen);
+  
   {
     struct hostio_video_setup setup={
       .title="Economy of Motion",
@@ -59,6 +66,10 @@ int drivers_init() {
       .device=0,
     };
     if (hostio_init_video(drivers.hostio,0,&setup)<0) return -1;
+    if (drivers.hostio->video->type->provides_input) {
+      g.devid_keyboard=hostio_input_devid_next();
+      inmgr_connect_keyboard(g.devid_keyboard);
+    }
   }
   
   {
@@ -90,6 +101,24 @@ int drivers_init() {
  
 int drivers_update() {
   if (hostio_update(drivers.hostio)<0) return -1;
+  
+  // Painstakingly set every button if they changed.
+  // There's some amount of map-and-unmap, fake-it-and-un-fake-it, in order to keep the JS app unchanged.
+  int input=inmgr_get_player(0);
+  if (input!=g.pvinput) {
+    #define _(tag,dstp) if ((input&INMGR_BTN_##tag)!=(g.pvinput&INMGR_BTN_##tag)) exec_set_gamepad_button(0,dstp,(input&INMGR_BTN_##tag)?1:0);
+    _(LEFT,14)
+    _(RIGHT,15)
+    _(UP,12)
+    _(DOWN,13)
+    _(SOUTH,0)
+    _(WEST,1)
+    _(AUX1,9)
+    #undef _
+    if ((input&INMGR_BTN_AUX3)&&!(g.pvinput&INMGR_BTN_AUX3)) g.terminate=1;
+    g.pvinput=input;
+  }
+  
   return 0;
 }
 
