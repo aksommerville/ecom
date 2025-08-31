@@ -113,9 +113,10 @@ int drivers_update() {
     _(DOWN,13)
     _(SOUTH,0)
     _(WEST,1)
-    _(AUX1,9)
+    //_(AUX1,9)
     #undef _
     if ((input&INMGR_BTN_AUX3)&&!(g.pvinput&INMGR_BTN_AUX3)) g.terminate=1;
+    if ((input&INMGR_BTN_AUX1)&&!(g.pvinput&INMGR_BTN_AUX1)) g.terminate=1; // Need AUX1 to quit too. The game doesn't use it. Some of my kiosk gamepads have no AUX3.
     g.pvinput=input;
   }
   
